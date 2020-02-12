@@ -1,0 +1,17 @@
+name: chip8-swing
+
+on: [push]
+
+jobs:
+  verify:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: git
+      uses: actions/checkout@v2
+      
+    - name: maven
+      uses: "xlui/action-maven-cli/jdk11@master"
+      with:
+        args: -B clean verify --file pom.xml
