@@ -8,10 +8,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: git
+    # temporary checkout and build of core dependency
+    - name: git core
       uses: actions/checkout@v2
-      
+      with:
+        path: core
+
+    - name: maven core
+      uses: "xlui/action-maven-cli/jdk11@master"
+      with:
+        args: -B clean install --file core/pom.xml
+
+    - name: git swing
+      uses: actions/checkout@v2
+      with:
+        path: swing
+
     - name: maven
       uses: "xlui/action-maven-cli/jdk11@master"
       with:
-        args: -B clean verify --file pom.xml
+        args: -B clean verify --file swing/pom.xml
