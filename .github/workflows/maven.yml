@@ -19,7 +19,7 @@ jobs:
     - name: maven core
       uses: "xlui/action-maven-cli/jdk11@master"
       with:
-        args: -B clean install --file core/pom.xml
+        args: -B -Dmaven.repo.local=$PWD/repo clean install --file core/pom.xml
 
     - name: git swing
       uses: actions/checkout@v2
@@ -29,4 +29,4 @@ jobs:
     - name: maven swing
       uses: "xlui/action-maven-cli/jdk11@master"
       with:
-        args: -B clean verify --file swing/pom.xml
+        args: -B -Dmaven.repo.local=$PWD/repo clean verify --file swing/pom.xml
