@@ -13,6 +13,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: core
+        repository: metteo/chip8-core
 
     - name: maven core
       uses: "xlui/action-maven-cli/jdk11@master"
@@ -24,7 +25,7 @@ jobs:
       with:
         path: swing
 
-    - name: maven
+    - name: maven swing
       uses: "xlui/action-maven-cli/jdk11@master"
       with:
         args: -B clean verify --file swing/pom.xml
