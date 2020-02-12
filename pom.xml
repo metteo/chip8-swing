@@ -134,5 +134,22 @@
             <artifactId>chip8-core</artifactId>
             <version>0.9.0-SNAPSHOT</version>
         </dependency>
+
+        <!--Log4j2 with yml config -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>2.9.10</version>
+        </dependency>
     </dependencies>
 </project>

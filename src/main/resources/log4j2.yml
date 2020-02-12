@@ -1,0 +1,15 @@
+configuration:
+  status: warn
+
+  appenders:
+    console:
+      name: console
+      patternLayout:
+        # https://logging.apache.org/log4j/2.x/manual/layouts.html
+        pattern: "%highlight{%d{HH:mm:ss.SSS} [%t] %-5level %logger{1.} %M - %msg%n}"
+
+  loggers:
+    root:
+      level: info
+      appenderRef:
+        ref: console
