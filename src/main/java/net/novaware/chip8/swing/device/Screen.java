@@ -15,8 +15,10 @@ public class Screen extends JComponent {
 
     //TODO: sync & @GuardedBy missing
     private boolean[][] model = new boolean[32][64]; // [y][x]
+    private boolean[][] modelPrev = new boolean[32][64]; // [y][x]
 
     private static final boolean REDRAW_HEURISTIC = !false;
+    private static final boolean REDRAW_HEURISTIC2 = false;
 
     private Integer prevChange = uint(Registers.GC_DRAW);
     private Integer lastChange = uint(Registers.GC_DRAW); //TODO: improve and use timers which repaint even earlier if next erase happens long after last draw (like game over screen)
@@ -36,7 +38,12 @@ public class Screen extends JComponent {
     public void paint(Graphics g) {
         for(int y = 0; y < 32; y++) {
             for (int x = 0; x < 64; x++) {
-                if (model[y][x]) {
+                boolean pixel = model[y][x];
+                if (REDRAW_HEURISTIC2) {
+                    pixel |= modelPrev[y][x];
+                }
+
+                if (pixel) {
                     g.setColor(Color.WHITE);
                 } else {
                     g.setColor(Color.BLACK);
@@ -58,6 +65,7 @@ public class Screen extends JComponent {
     }
 
     public void setModelValue(int x, int y, boolean value) {
+        modelPrev[y][x] = model[y][x];
         model[y][x] = value;
     }
 
