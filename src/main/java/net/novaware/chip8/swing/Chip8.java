@@ -1,6 +1,7 @@
 package net.novaware.chip8.swing;
 
 import net.novaware.chip8.core.Board;
+import net.novaware.chip8.core.BoardConfig;
 import net.novaware.chip8.swing.device.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,7 +39,10 @@ public class Chip8 {
         Buzzer buzzer = new Buzzer();
         buzzer.init();
 
-        Board board = newBoardFactory().newBoard();
+        BoardConfig config = new BoardConfig();
+
+        Board board = newBoardFactory(config)
+                .newBoard();
         board.init();
 
         board.getDisplayPort().attach(screen::draw);
