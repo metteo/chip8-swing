@@ -41,6 +41,27 @@ public class Chip8 {
 
         BoardConfig config = new BoardConfig();
 
+        // TODO: create a ROM library with game profiles instead
+        if (title.equals("INVADERS")) {
+            config.setCpuFrequency(1500);
+            config.setLegacyShift(false);
+        }
+
+        if (title.equals("BRIX")) {
+            config.setCpuFrequency(700);
+            config.setEnforceMemoryRoRwState(false);
+        }
+
+        if (title.equals("BLINKY")) {
+            config.setEnforceMemoryRoRwState(false);
+            config.setLegacyLoadStore(false);
+            config.setLegacyShift(false);
+        }
+
+        if (title.equals("UFO")) {
+            config.setCpuFrequency(700);
+        }
+
         Board board = newBoardFactory(config)
                 .newBoard();
         board.init();
