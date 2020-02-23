@@ -1,7 +1,7 @@
 package net.novaware.chip8.swing.device;
 
 import net.novaware.chip8.core.cpu.register.Registers;
-import net.novaware.chip8.core.util.ViewPort;
+import net.novaware.chip8.core.gpu.ViewPort;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +17,7 @@ public class Screen extends JComponent {
     private boolean[][] model = new boolean[32][64]; // [y][x]
     private boolean[][] modelPrev = new boolean[32][64]; // [y][x]
 
-    private static final boolean REDRAW_HEURISTIC = false;
+    private static final boolean REDRAW_HEURISTIC = !false;
     private static final boolean REDRAW_HEURISTIC2 = false;
 
     private Integer prevChange = uint(Registers.GC_DRAW);
