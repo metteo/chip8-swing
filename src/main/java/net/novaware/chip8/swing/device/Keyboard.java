@@ -21,6 +21,11 @@ public class Keyboard extends KeyAdapter {
     public void keyPressed(KeyEvent e) {
         //displayInfo(e, "KEY PRESSED: ");
 
+        if (e.getKeyCode() == KeyEvent.VK_R) {
+            keyPort.reset();
+            return;
+        }
+
         int keyIdx = normalizeKeyCode(e);
         if (keyIdx >= 0x0 && keyIdx <= 0xF) {
             //System.out.println("+" + keyIdx);
