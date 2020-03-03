@@ -31,7 +31,7 @@ public class Keyboard extends KeyAdapter {
             //System.out.println("+" + keyIdx);
 
             lastKey = (byte) keyIdx;
-            keyPort.keyPressed(lastKey);  //FIXME: race condition
+            keyPort.keyPressed(lastKey);
 
             //TODO: registers.getKeyWait().set((byte)0x0);
 
@@ -44,7 +44,7 @@ public class Keyboard extends KeyAdapter {
                 final short newKeyState = (short)(keyMask | Short.toUnsignedInt(currentKeyState));
 
                 keyState = newKeyState;
-                keyPort.updateKeyState(keyState); //FIXME: race condition!!!! cpu runs in different thread
+                keyPort.updateKeyState(keyState);
             }
 
             //System.out.println(String.format("%16s", Integer.toBinaryString(registers.getKeyState().get())).replace(' ', '0'));
@@ -68,7 +68,6 @@ public class Keyboard extends KeyAdapter {
                 final short newKeyState = (short)(~keyMask & Short.toUnsignedInt(currentKeyState));
 
                 keyState = newKeyState;
-                //FIXME: race condition!!!! cpu runs in main thread
                 keyPort.updateKeyState(keyState);
             }
 
