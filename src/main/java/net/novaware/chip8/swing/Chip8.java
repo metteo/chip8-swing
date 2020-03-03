@@ -2,12 +2,15 @@ package net.novaware.chip8.swing;
 
 import net.novaware.chip8.core.Board;
 import net.novaware.chip8.core.BoardConfig;
+import net.novaware.chip8.core.clock.ClockGenerator;
+import net.novaware.chip8.core.clock.ClockGeneratorJvmImpl;
 import net.novaware.chip8.swing.device.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import java.nio.file.Path;
+import java.util.Random;
 
 import static java.lang.System.exit;
 import static net.novaware.chip8.core.BoardFactory.newBoardFactory;
@@ -62,7 +65,9 @@ public class Chip8 {
             config.setCpuFrequency(700);
         }
 
-        Board board = newBoardFactory(config)
+        ClockGenerator clock = new ClockGeneratorJvmImpl("Swing");
+
+        Board board = newBoardFactory(config, clock, new Random()::nextInt)
                 .newBoard();
         board.init();
 
