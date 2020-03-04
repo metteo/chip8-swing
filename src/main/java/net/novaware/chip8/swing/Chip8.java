@@ -35,6 +35,8 @@ public class Chip8 {
         aCase.add(screen);
         aCase.pack();
 
+        screen.fpsConsumer = aCase.statusConsumer;
+
         SwingUtilities.invokeLater(() -> aCase.setVisible(true));
 
         Tape tape = new Tape(romPath);
@@ -63,6 +65,11 @@ public class Chip8 {
 
         if (title.equals("UFO")) {
             config.setCpuFrequency(700);
+        }
+
+        if (title.equals("TANK")) {
+            config.setCpuFrequency(1200);
+            config.setEnforceMemoryRoRwState(false);
         }
 
         ClockGenerator clock = new ClockGeneratorJvmImpl("Swing");
