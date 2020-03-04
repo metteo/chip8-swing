@@ -1,7 +1,7 @@
 package net.novaware.chip8.swing.device;
 
-import net.novaware.chip8.core.cpu.register.Registers;
 import net.novaware.chip8.core.gpu.ViewPort;
+import net.novaware.chip8.core.port.DisplayPort;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,8 +20,8 @@ public class Screen extends JComponent {
     private static final boolean REDRAW_HEURISTIC = !false;
     private static final boolean REDRAW_HEURISTIC2 = false;
 
-    private Integer prevChange = uint(Registers.GC_DRAW);
-    private Integer lastChange = uint(Registers.GC_DRAW); //TODO: improve and use timers which repaint even earlier if next erase happens long after last draw (like game over screen)
+    private Integer prevChange = DisplayPort.GC_DRAW;
+    private Integer lastChange = DisplayPort.GC_DRAW; //TODO: improve and use timers which repaint even earlier if next erase happens long after last draw (like game over screen)
 
     private long lastPaint;
     private int fps; //calculate average from 3 frames?
@@ -72,7 +72,7 @@ public class Screen extends JComponent {
     public void draw(Integer currentChange, byte[] data) {
         if (REDRAW_HEURISTIC) {
             //if (prevChange != uint(GC_ERASE) && lastChange != uint(GC_ERASE) && currentChange == uint(GC_ERASE)) { //TODO: catch cases on the graph where there is multiple deletions interrupted by single draw, they should be all treated as erase and no repaint should happen?
-            if ((lastChange != uint(Registers.GC_ERASE) && currentChange == uint(Registers.GC_ERASE)) || currentChange == uint(Registers.GC_MIX)) { //this works for games, above works nice for invaders menu screen
+            if ((lastChange != DisplayPort.GC_ERASE && currentChange == DisplayPort.GC_ERASE) || currentChange == DisplayPort.GC_MIX) { //this works for games, above works nice for invaders menu screen
                 //System.out.println("-----");
                 calculateFps();
                 SwingUtilities.invokeLater(this::repaint); //FIXME deferred in the future so even though called before updateModel may execute after...

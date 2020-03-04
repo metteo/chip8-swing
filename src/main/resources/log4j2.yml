@@ -13,3 +13,9 @@ configuration:
       level: info
       appenderRef:
         ref: console
+
+# Uncomment to see <addr>: <instr> -> <pc>
+#    logger:
+#      -
+#        name: net.novaware.chip8.core.cpu.unit.ControlUnit
+#        level: trace
