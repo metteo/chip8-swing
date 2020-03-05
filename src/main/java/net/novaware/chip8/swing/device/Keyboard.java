@@ -13,25 +13,24 @@ public class Keyboard extends KeyAdapter {
     //16 keys
 
     private short keyState;
-    private byte lastKey;
 
     private KeyPort keyPort;
+    public Runnable resetHandler;
 
     @Override
     public void keyPressed(KeyEvent e) {
         //displayInfo(e, "KEY PRESSED: ");
 
         if (e.getKeyCode() == KeyEvent.VK_R) {
-            keyPort.reset();
+            if (resetHandler != null) {
+                resetHandler.run();
+            }
             return;
         }
 
         int keyIdx = normalizeKeyCode(e);
         if (keyIdx >= 0x0 && keyIdx <= 0xF) {
             //System.out.println("+" + keyIdx);
-
-            lastKey = (byte) keyIdx;
-            keyPort.keyPressed(lastKey);
 
             //TODO: registers.getKeyWait().set((byte)0x0);
 
