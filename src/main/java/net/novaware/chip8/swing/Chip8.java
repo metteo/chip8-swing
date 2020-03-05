@@ -85,6 +85,8 @@ public class Chip8 {
         Keyboard k = new Keyboard();
         k.init(board.getKeyPort(), aCase);
 
+        aCase.pauseConsumer = paused -> { if (paused) board.pause(); else board.resume(); };
+
         board.runOnScheduler(Integer.MAX_VALUE);
     }
 }

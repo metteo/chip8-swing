@@ -22,6 +22,7 @@ public class Case extends JFrame {
 
     //TODO: figure out how to handle status and menu events
     public Consumer<Integer> statusConsumer;
+    public Consumer<Boolean> pauseConsumer;
 
     public Case() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -37,6 +38,8 @@ public class Case extends JFrame {
         JLabel statusLabel = getStatusLabel();
         statusPanel.add(statusLabel);
         statusConsumer = fps -> statusLabel.setText("FPS: " + fps);
+
+        setupAutoPause();
     }
 
     private JLabel getStatusLabel() {
@@ -53,21 +56,21 @@ public class Case extends JFrame {
         return statusPanel;
     }
 
-    void setupAutoPause() { //TODO: reimplement it
-        //TODO: configurable, default true, gaining focus should request confirmation for unpause
-        final AtomicBoolean paused = new AtomicBoolean();
+    void setupAutoPause() {
 
         addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                //console.setTitle(title);
-                paused.set(false);
+                if (pauseConsumer != null) {
+                    pauseConsumer.accept(false);
+                }
             }
 
             @Override
             public void focusLost(FocusEvent e) {
-                //console.setTitle(title + " - Paused");
-                paused.set(true);
+                if (pauseConsumer != null) {
+                    pauseConsumer.accept(true);
+                }
             }
         });
     }
