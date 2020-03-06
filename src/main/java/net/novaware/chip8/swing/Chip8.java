@@ -119,20 +119,20 @@ public class Chip8 {
 
         Board board = newBoardFactory(config, clock, new Random()::nextInt)
                 .newBoard();
-        board.init();
 
         board.getDisplayPort().attach(screen::draw);
         board.getAudioPort().attach(buzzer);
-        board.getStoragePort().load(tape.load());
+        board.getStoragePort().attachSource(tape::load);
 
         Keyboard k = new Keyboard();
         k.mapper = mapper;
         k.init(board.getKeyPort(), aCase);
 
-        k.resetHandler = board::reset;
+        k.resetHandler = board::hardReset;
 
         aCase.pauseConsumer = paused -> { if (paused) board.pause(); else board.resume(); };
 
+        board.initialize();
         board.runOnScheduler(Integer.MAX_VALUE);
     }
 }

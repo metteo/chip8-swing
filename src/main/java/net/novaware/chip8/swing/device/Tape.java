@@ -1,7 +1,9 @@
 package net.novaware.chip8.swing.device;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -9,6 +11,9 @@ import java.nio.file.Path;
  * Storage device
  */
 public class Tape {
+
+    private static final Logger LOG = LogManager.getLogger();
+
     private Path romPath;
 
     public Tape(Path romPath) {
@@ -17,12 +22,13 @@ public class Tape {
     //TODO: implement loading of roms
     //create a DB of rom hashes and key mapping for each rom, maybe some basic metadata with screenshot
 
-    public byte[] load() throws IOException {
-        final InputStream binary = Files.newInputStream(romPath);
-
+    public byte[] load() {
         final byte[] bytes;
-        try (binary) {
+        try (var binary = Files.newInputStream(romPath)) {
             bytes = binary.readAllBytes(); //TODO handle exception
+        } catch (IOException e) {
+            LOG.error("Exc while loading ROM", e);
+            return new byte[0];
         }
 
         return bytes;
