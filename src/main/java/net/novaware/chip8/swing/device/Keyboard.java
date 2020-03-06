@@ -5,6 +5,7 @@ import net.novaware.chip8.core.port.KeyPort;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.function.Function;
 
 /**
  * Key device
@@ -17,6 +18,8 @@ public class Keyboard extends KeyAdapter {
     private KeyPort keyPort;
     public Runnable resetHandler;
 
+    public Function<KeyEvent, Integer> mapper = Keyboard::normalizeKeyCode;
+
     @Override
     public void keyPressed(KeyEvent e) {
         //displayInfo(e, "KEY PRESSED: ");
@@ -28,7 +31,7 @@ public class Keyboard extends KeyAdapter {
             return;
         }
 
-        int keyIdx = normalizeKeyCode(e);
+        int keyIdx = mapper.apply(e);
         if (keyIdx >= 0x0 && keyIdx <= 0xF) {
             //System.out.println("+" + keyIdx);
 
@@ -54,7 +57,7 @@ public class Keyboard extends KeyAdapter {
     public void keyReleased(KeyEvent e) { //TODO: add heuristic that doesn't clear the keys until they are checked for presence (configurable ofc)
         //displayInfo(e, "KEY RELEASED: ");
 
-        int keyIdx = normalizeKeyCode(e);
+        int keyIdx = mapper.apply(e);
         if (keyIdx >= 0x0 && keyIdx <= 0xF) {
             //System.out.println("-" + keyIdx);
 
@@ -80,7 +83,7 @@ public class Keyboard extends KeyAdapter {
         c.addKeyListener(this);
     }
 
-    private static int normalizeKeyCode(KeyEvent e) {
+    public static int normalizeKeyCode(KeyEvent e) {
         final int keyCode = e.getKeyCode();
         int keyIdx = -1;
         if (keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_9) {

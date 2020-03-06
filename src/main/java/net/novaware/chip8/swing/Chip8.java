@@ -9,9 +9,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
+import java.awt.event.KeyEvent;
 import java.nio.file.Path;
 import java.util.Random;
+import java.util.function.Function;
 
+import static java.awt.event.KeyEvent.*;
 import static java.lang.System.exit;
 import static net.novaware.chip8.core.BoardFactory.newBoardFactory;
 
@@ -46,10 +49,22 @@ public class Chip8 {
 
         BoardConfig config = new BoardConfig();
 
+        Function<KeyEvent, Integer> mapper = Keyboard::normalizeKeyCode;
+
         // TODO: create a ROM library with game profiles instead
         if (title.equals("INVADERS")) {
             config.setCpuFrequency(1500);
             config.setLegacyShift(false);
+
+            mapper = keyEvent -> {
+                switch(keyEvent.getKeyCode()) {
+                    case VK_SPACE: return 5;
+                    case VK_LEFT: return 4;
+                    case VK_RIGHT: return 6;
+                }
+
+                return Keyboard.normalizeKeyCode(keyEvent);
+            };
         }
 
         if (title.equals("BRIX")) {
@@ -61,6 +76,17 @@ public class Chip8 {
             config.setEnforceMemoryRoRwState(false);
             config.setLegacyLoadStore(false);
             config.setLegacyShift(false);
+
+            mapper = keyEvent -> {
+                switch(keyEvent.getKeyCode()) {
+                    case VK_UP: return 3;
+                    case VK_DOWN: return 6;
+                    case VK_LEFT: return 7;
+                    case VK_RIGHT: return 8;
+                }
+
+                return Keyboard.normalizeKeyCode(keyEvent);
+            };
         }
 
         if (title.equals("UFO")) {
@@ -69,6 +95,23 @@ public class Chip8 {
 
         if (title.equals("TANK")) {
             config.setCpuFrequency(1200);
+            config.setEnforceMemoryRoRwState(false);
+
+            mapper = keyEvent -> {
+                switch(keyEvent.getKeyCode()) {
+                    case VK_UP: return 8;
+                    case VK_DOWN: return 2;
+                    case VK_LEFT: return 4;
+                    case VK_RIGHT: return 6;
+                    case VK_SPACE: return 5;
+                }
+
+                return Keyboard.normalizeKeyCode(keyEvent);
+            };
+        }
+
+        if (title.contains("Lunar")) {
+            config.setCpuFrequency(500);
             config.setEnforceMemoryRoRwState(false);
         }
 
@@ -83,6 +126,7 @@ public class Chip8 {
         board.getStoragePort().load(tape.load());
 
         Keyboard k = new Keyboard();
+        k.mapper = mapper;
         k.init(board.getKeyPort(), aCase);
 
         k.resetHandler = board::reset;
