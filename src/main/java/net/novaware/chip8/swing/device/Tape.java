@@ -23,6 +23,10 @@ public class Tape {
     //create a DB of rom hashes and key mapping for each rom, maybe some basic metadata with screenshot
 
     public byte[] load() {
+        if (romPath == null) {
+            return new byte[] { 0x11, 0x00 }; // GO 100 (jump to Boot-128)
+        }
+
         final byte[] bytes;
         try (var binary = Files.newInputStream(romPath)) {
             bytes = binary.readAllBytes(); //TODO handle exception

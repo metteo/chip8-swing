@@ -23,13 +23,18 @@ public class Chip8 {
     private static final Logger LOG = LogManager.getLogger();
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
-            LOG.error("usage: chip8 <pathToRom>");
-            exit(1);
-        }
+        Path romPath = null;
+        String title = null;
 
-        final Path romPath = Path.of(args[0]);
-        final String title = romPath.getName(romPath.getNameCount() - 1).toString();
+        if (args.length > 1) {
+            LOG.error("usage: chip8 [<pathToRom>]");
+            exit(1);
+        } else if (args.length == 1) {
+            romPath = Path.of(args[0]);
+            title = romPath.getName(romPath.getNameCount() - 1).toString();
+        } else {
+            title = "Boot-128";
+        }
 
         Screen screen = new Screen();
 
@@ -113,6 +118,14 @@ public class Chip8 {
         if (title.contains("Lunar")) {
             config.setCpuFrequency(500);
             config.setEnforceMemoryRoRwState(false);
+        }
+
+        if (title.equals("Boot-128")) {
+            config.setCpuFrequency(100);
+            config.setEnforceMemoryRoRwState(false);
+            config.setLegacyShift(false);
+            config.setLegacyLoadStore(false);
+            config.setLegacyAddressSum(false);
         }
 
         ClockGenerator clock = new ClockGeneratorJvmImpl("Swing");
