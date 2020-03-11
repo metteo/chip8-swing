@@ -1,5 +1,7 @@
 package net.novaware.chip8.swing.device;
 
+import net.novaware.chip8.core.port.AudioPort;
+
 import javax.sound.midi.MidiChannel;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
@@ -9,7 +11,7 @@ import java.util.function.Consumer;
 /**
  * Sound device
  */
-public class Buzzer implements Consumer<Boolean> {
+public class Buzzer implements Consumer<AudioPort.Packet> {
     // A Midi device for simple tone generation
     //TODO: consider different java api for sound generation
     private Synthesizer synthesizer;
@@ -53,8 +55,8 @@ public class Buzzer implements Consumer<Boolean> {
     }
 
     @Override
-    public void accept(Boolean buzz) {
-        if (buzz) {
+    public void accept(AudioPort.Packet buzz) {
+        if (buzz.isSoundOn()) {
             startBuzzing();
         } else {
             stopBuzzing();

@@ -4,6 +4,7 @@ import net.novaware.chip8.core.Board;
 import net.novaware.chip8.core.BoardConfig;
 import net.novaware.chip8.core.clock.ClockGenerator;
 import net.novaware.chip8.core.clock.ClockGeneratorJvmImpl;
+import net.novaware.chip8.core.port.DisplayPort;
 import net.novaware.chip8.swing.device.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -133,8 +134,8 @@ public class Chip8 {
         Board board = newBoardFactory(config, clock, new Random()::nextInt)
                 .newBoard();
 
-        board.getDisplayPort().attach(screen::draw);
-        board.getAudioPort().attach(buzzer);
+        board.getDisplayPort(DisplayPort.Type.PRIMARY).attach(screen::draw);
+        board.getAudioPort().connect(buzzer);
         board.getStoragePort().attachSource(tape::load);
 
         Keyboard k = new Keyboard();
