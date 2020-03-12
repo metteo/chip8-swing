@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.nio.file.Path;
 import java.util.Random;
@@ -37,14 +38,19 @@ public class Chip8 {
             title = "Boot-128";
         }
 
-        Screen screen = new Screen();
+        Screen primaryScreen = new Screen();
+        Screen secondaryScreen = new Screen();
+
+        JPanel screens = new JPanel(new GridLayout(2,1));
+        screens.add(primaryScreen);
+        screens.add(secondaryScreen);
 
         Case aCase = new Case();
         aCase.setTitle(title);
-        aCase.add(screen);
+        aCase.add(screens);
         aCase.pack();
 
-        screen.fpsConsumer = aCase.statusConsumer;
+        primaryScreen.fpsConsumer = aCase.statusConsumer;
 
         SwingUtilities.invokeLater(() -> aCase.setVisible(true));
 
@@ -56,11 +62,13 @@ public class Chip8 {
         BoardConfig config = new BoardConfig();
 
         Function<KeyEvent, Integer> mapper = Keyboard::normalizeKeyCode;
+        DisplayPort.Mode mode = DisplayPort.Mode.DIRECT;
 
         // TODO: create a ROM library with game profiles instead
         if (title.equals("INVADERS")) {
             config.setCpuFrequency(1500);
             config.setLegacyShift(false);
+            mode = DisplayPort.Mode.FALLING_EDGE;
 
             mapper = keyEvent -> {
                 switch(keyEvent.getKeyCode()) {
@@ -76,12 +84,14 @@ public class Chip8 {
         if (title.equals("BRIX")) {
             config.setCpuFrequency(700);
             config.setEnforceMemoryRoRwState(false);
+            mode = DisplayPort.Mode.MERGE_FRAME;
         }
 
         if (title.equals("BLINKY")) {
             config.setEnforceMemoryRoRwState(false);
             config.setLegacyLoadStore(false);
             config.setLegacyShift(false);
+            mode = DisplayPort.Mode.MERGE_FRAME;
 
             mapper = keyEvent -> {
                 switch(keyEvent.getKeyCode()) {
@@ -95,13 +105,31 @@ public class Chip8 {
             };
         }
 
+        if (title.equals("PONG2")) {
+            config.setEnforceMemoryRoRwState(false);
+            mode = DisplayPort.Mode.MERGE_FRAME;
+
+            mapper = keyEvent -> {
+                switch(keyEvent.getKeyCode()) {
+                    case VK_W: return 1;
+                    case VK_S: return 4;
+                    case VK_UP: return 0xC;
+                    case VK_DOWN: return 0xD;
+                }
+
+                return Keyboard.normalizeKeyCode(keyEvent);
+            };
+        }
+
         if (title.equals("UFO")) {
             config.setCpuFrequency(700);
+            mode = DisplayPort.Mode.MERGE_FRAME;
         }
 
         if (title.equals("TANK")) {
             config.setCpuFrequency(1200);
             config.setEnforceMemoryRoRwState(false);
+            mode = DisplayPort.Mode.MERGE_FRAME;
 
             mapper = keyEvent -> {
                 switch(keyEvent.getKeyCode()) {
@@ -134,7 +162,11 @@ public class Chip8 {
         Board board = newBoardFactory(config, clock, new Random()::nextInt)
                 .newBoard();
 
-        board.getDisplayPort(DisplayPort.Type.PRIMARY).attach(screen::draw);
+        board.getDisplayPort(DisplayPort.Type.PRIMARY).connect(primaryScreen::draw);
+        board.getDisplayPort(DisplayPort.Type.PRIMARY).setMode(mode);
+
+        board.getDisplayPort(DisplayPort.Type.SECONDARY).connect(secondaryScreen::draw);
+
         board.getAudioPort().connect(buzzer);
         board.getStoragePort().attachSource(tape::load);
 
