@@ -26,6 +26,9 @@ jobs:
       with:
         java-version: '11.0.6+10'
 
+    - name: prepare maven
+      run: cp -R ./core/.mvn ./ ; cp ./core/mvnw ./
+
     - name: maven core
       run: ./mvnw -B -Dmaven.repo.local=$PWD/repo clean install --file core/pom.xml
 
