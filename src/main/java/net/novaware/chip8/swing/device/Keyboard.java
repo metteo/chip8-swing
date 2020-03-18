@@ -5,7 +5,10 @@ import net.novaware.chip8.core.port.KeyPort;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static net.novaware.chip8.core.util.UnsignedUtil.ubyte;
 
 /**
  * Key device
@@ -15,7 +18,7 @@ public class Keyboard extends KeyAdapter {
 
     private short keyState;
 
-    private KeyPort keyPort;
+    private Consumer<KeyPort.InputPacket> keyReceiver;
     public Runnable resetHandler;
 
     public Function<KeyEvent, Integer> mapper = Keyboard::normalizeKeyCode;
@@ -33,23 +36,7 @@ public class Keyboard extends KeyAdapter {
 
         int keyIdx = mapper.apply(e);
         if (keyIdx >= 0x0 && keyIdx <= 0xF) {
-            //System.out.println("+" + keyIdx);
-
-            //TODO: registers.getKeyWait().set((byte)0x0);
-
-            final short currentKeyState = keyState;
-
-            int keyMask = 1 << keyIdx;
-            boolean alreadyPressed = (Short.toUnsignedInt(currentKeyState) & keyMask) > 0;
-
-            if (!alreadyPressed) {
-                final short newKeyState = (short)(keyMask | Short.toUnsignedInt(currentKeyState));
-
-                keyState = newKeyState;
-                keyPort.updateKeyState(keyState);
-            }
-
-            //System.out.println(String.format("%16s", Integer.toBinaryString(registers.getKeyState().get())).replace(' ', '0'));
+            keyReceiver.accept(new InPacket(KeyPort.Direction.DOWN, ubyte(keyIdx)));
         }
     }
 
@@ -59,26 +46,12 @@ public class Keyboard extends KeyAdapter {
 
         int keyIdx = mapper.apply(e);
         if (keyIdx >= 0x0 && keyIdx <= 0xF) {
-            //System.out.println("-" + keyIdx);
-
-            final short currentKeyState = keyState;
-
-            int keyMask = 1 << keyIdx;
-            boolean alreadyReleased = (Short.toUnsignedInt(currentKeyState) & keyMask) == 0;
-
-            if (!alreadyReleased) {
-                final short newKeyState = (short)(~keyMask & Short.toUnsignedInt(currentKeyState));
-
-                keyState = newKeyState;
-                keyPort.updateKeyState(keyState);
-            }
-
-            //System.out.println(String.format("%16s", Integer.toBinaryString(registers.getKeyState().get())).replace(' ', '0'));
+            keyReceiver.accept(new InPacket(KeyPort.Direction.UP, ubyte(keyIdx)));
         }
     }
 
-    public void init(KeyPort keyPort, Component c) {
-        this.keyPort = keyPort;
+    public void init(Consumer<KeyPort.InputPacket> keyReceiver, Component c) {
+        this.keyReceiver = keyReceiver;
 
         c.addKeyListener(this);
     }
@@ -95,5 +68,26 @@ public class Keyboard extends KeyAdapter {
         }
 
         return keyIdx;
+    }
+
+    static class InPacket implements KeyPort.InputPacket {
+
+        KeyPort.Direction direction;
+        byte keyCode;
+
+        InPacket(KeyPort.Direction direction, byte keyCode) {
+            this.direction = direction;
+            this.keyCode = keyCode;
+        }
+
+        @Override
+        public KeyPort.Direction getDirection() {
+            return direction;
+        }
+
+        @Override
+        public byte getKeyCode() {
+            return keyCode;
+        }
     }
 }

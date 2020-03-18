@@ -19,6 +19,8 @@ import java.util.function.Function;
 import static java.awt.event.KeyEvent.*;
 import static java.lang.System.exit;
 import static net.novaware.chip8.core.BoardFactory.newBoardFactory;
+import static net.novaware.chip8.core.util.HexUtil.toHexString;
+import static net.novaware.chip8.core.util.UnsignedUtil.ubyte;
 
 public class Chip8 {
 
@@ -62,7 +64,7 @@ public class Chip8 {
         BoardConfig config = new BoardConfig();
 
         Function<KeyEvent, Integer> mapper = Keyboard::normalizeKeyCode;
-        DisplayPort.Mode mode = DisplayPort.Mode.DIRECT;
+        DisplayPort.Mode mode = DisplayPort.Mode.MERGE_FRAME;
 
         // TODO: create a ROM library with game profiles instead
         if (title.equals("INVADERS")) {
@@ -107,7 +109,7 @@ public class Chip8 {
 
         if (title.equals("PONG2")) {
             config.setEnforceMemoryRoRwState(false);
-            mode = DisplayPort.Mode.MERGE_FRAME;
+            mode = DisplayPort.Mode.FALLING_EDGE;
 
             mapper = keyEvent -> {
                 switch(keyEvent.getKeyCode()) {
@@ -172,7 +174,13 @@ public class Chip8 {
 
         Keyboard k = new Keyboard();
         k.mapper = mapper;
-        k.init(board.getKeyPort(), aCase);
+        k.init(board.getKeyPort().connect(op -> {
+            for (int i = 0; i < 0x10; ++i) {
+                if (op.isKeyUsed(ubyte(i))) {
+                    System.out.println("Key used: " + toHexString(ubyte(i)));
+                }
+            }
+        }), aCase);
 
         k.resetHandler = board::hardReset;
 
