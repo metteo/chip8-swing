@@ -1,9 +1,9 @@
 package net.novaware.chip8.swing;
 
 import net.novaware.chip8.core.Board;
-import net.novaware.chip8.core.BoardConfig;
 import net.novaware.chip8.core.clock.ClockGenerator;
 import net.novaware.chip8.core.clock.ClockGeneratorJvmImpl;
+import net.novaware.chip8.core.config.MutableConfig;
 import net.novaware.chip8.core.port.DisplayPort;
 import net.novaware.chip8.swing.device.*;
 import org.apache.logging.log4j.LogManager;
@@ -61,7 +61,7 @@ public class Chip8 {
         Buzzer buzzer = new Buzzer();
         buzzer.init();
 
-        BoardConfig config = new BoardConfig();
+        MutableConfig config = new MutableConfig();
 
         Function<KeyEvent, Integer> mapper = Keyboard::normalizeKeyCode;
         DisplayPort.Mode mode = DisplayPort.Mode.MERGE_FRAME;
