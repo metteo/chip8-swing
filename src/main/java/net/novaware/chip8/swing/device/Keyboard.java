@@ -19,20 +19,12 @@ public class Keyboard extends KeyAdapter {
     private short keyState;
 
     private Consumer<KeyPort.InputPacket> keyReceiver;
-    public Runnable resetHandler;
 
     public Function<KeyEvent, Integer> mapper = Keyboard::normalizeKeyCode;
 
     @Override
     public void keyPressed(KeyEvent e) {
         //displayInfo(e, "KEY PRESSED: ");
-
-        if (e.getKeyCode() == KeyEvent.VK_R) {
-            if (resetHandler != null) {
-                resetHandler.run();
-            }
-            return;
-        }
 
         int keyIdx = mapper.apply(e);
         if (keyIdx >= 0x0 && keyIdx <= 0xF) {

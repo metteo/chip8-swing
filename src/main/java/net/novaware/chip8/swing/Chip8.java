@@ -182,8 +182,7 @@ public class Chip8 {
             }
         }), aCase);
 
-        k.resetHandler = board::hardReset;
-
+        aCase.resetConsumer = board::hardReset;
         aCase.pauseConsumer = paused -> { if (paused) board.pause(); else board.resume(); };
 
         board.initialize();
