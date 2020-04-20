@@ -1,11 +1,14 @@
 package net.novaware.chip8.swing.device;
 
+import net.novaware.chip8.core.port.StoragePort;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import static net.novaware.chip8.core.util.UnsignedUtil.uint;
 
 /**
  * Storage device
@@ -36,5 +39,21 @@ public class Tape {
         }
 
         return bytes;
+    }
+
+    public StoragePort.Packet toPacket() {
+        byte[] bytes = load();
+
+        return new StoragePort.Packet() {
+            @Override
+            public int getSize() {
+                return bytes.length;
+            }
+
+            @Override
+            public byte getByte(short i) {
+                return bytes[uint(i)];
+            }
+        };
     }
 }

@@ -170,7 +170,7 @@ public class Chip8 {
         board.getDisplayPort(DisplayPort.Type.SECONDARY).connect(secondaryScreen::draw);
 
         board.getAudioPort().connect(buzzer);
-        board.getStoragePort().attachSource(tape::load);
+        board.getStoragePort().connect(tape::toPacket);
 
         Keyboard k = new Keyboard();
         k.mapper = mapper;

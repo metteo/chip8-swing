@@ -45,6 +45,7 @@ public class Case extends JFrame {
         setupAutoPause();
     }
 
+    //TODO: RES/RUN switch status, PWR light, Q light (sound)
     private JLabel getStatusLabel() {
         JLabel statusLabel = new JLabel("FPS: ");
         statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
