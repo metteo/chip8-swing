@@ -56,7 +56,7 @@ public class Chip8 {
 
         SwingUtilities.invokeLater(() -> aCase.setVisible(true));
 
-        Tape tape = new Tape(romPath);
+        Cardridge cardridge = new Cardridge(romPath);
 
         Buzzer buzzer = new Buzzer();
         buzzer.init();
@@ -170,7 +170,7 @@ public class Chip8 {
         board.getDisplayPort(DisplayPort.Type.SECONDARY).connect(secondaryScreen::draw);
 
         board.getAudioPort().connect(buzzer);
-        board.getStoragePort().connect(tape::toPacket);
+        board.getStoragePort().connect(cardridge::toPacket);
 
         Keyboard k = new Keyboard();
         k.mapper = mapper;

@@ -13,13 +13,13 @@ import static net.novaware.chip8.core.util.UnsignedUtil.uint;
 /**
  * Storage device
  */
-public class Tape {
+public class Cardridge {
 
     private static final Logger LOG = LogManager.getLogger();
 
     private Path romPath;
 
-    public Tape(Path romPath) {
+    public Cardridge(Path romPath) {
         this.romPath = romPath;
     }
     //TODO: implement loading of roms
