@@ -185,7 +185,6 @@ public class Chip8 {
         aCase.resetConsumer = board::hardReset;
         aCase.pauseConsumer = paused -> { if (paused) board.pause(); else board.resume(); };
 
-        board.initialize();
-        board.runOnScheduler(Integer.MAX_VALUE);
+        board.powerOn();
     }
 }

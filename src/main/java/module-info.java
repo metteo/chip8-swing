@@ -1,3 +1,4 @@
+@SuppressWarnings("module")
 module net.novaware.chip8.swing {
     requires transitive java.desktop;
     requires transitive net.novaware.chip8.core;
