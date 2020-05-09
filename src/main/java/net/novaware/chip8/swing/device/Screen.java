@@ -2,6 +2,7 @@ package net.novaware.chip8.swing.device;
 
 import net.novaware.chip8.core.port.DisplayPort;
 
+import javax.accessibility.Accessible;
 import javax.swing.*;
 import java.awt.*;
 import java.util.concurrent.locks.Lock;
@@ -11,7 +12,7 @@ import java.util.function.Consumer;
 /**
  * Display device
  */
-public class Screen extends JComponent {
+public class Screen extends JComponent implements Accessible { //TODO: make accessible
 
     private Lock modelLock = new ReentrantLock();
 
