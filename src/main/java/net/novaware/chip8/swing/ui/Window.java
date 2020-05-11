@@ -2,7 +2,7 @@ package net.novaware.chip8.swing.ui;
 
 import net.novaware.chip8.swing.display.Display;
 import net.novaware.chip8.swing.menu.MenuBarViewImpl;
-import net.novaware.chip8.swing.status.StatusBar;
+import net.novaware.chip8.swing.status.StatusBarViewImpl;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +15,7 @@ public class Window {
 
     private Display display;
 
-    private StatusBar statusBar;
+    private StatusBarViewImpl statusBar;
 
     public Window() {
         initialize();
@@ -32,7 +32,7 @@ public class Window {
         display = new Display();
         frame.add(display.getComponent());
 
-        statusBar = new StatusBar();
+        statusBar = new StatusBarViewImpl();
         frame.add(statusBar.getComponent(), BorderLayout.SOUTH);
     }
 

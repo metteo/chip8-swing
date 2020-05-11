@@ -1,7 +1,8 @@
 package net.novaware.chip8.swing.device;
 
+import net.novaware.chip8.swing.status.StatusBarViewImpl;
+
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -25,6 +26,7 @@ public class Case extends JFrame {
     public boolean autoPauseEnabled = true;
     public Runnable resetConsumer;
     public final JPanel statusPanel;
+    public final StatusBarViewImpl statusBar;
 
     public Case() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -34,32 +36,16 @@ public class Case extends JFrame {
 
         setLayout(new BorderLayout());
 
-        statusPanel = getStatusPanel();
+        statusBar = new StatusBarViewImpl();
+        statusBar.initialize();
+        statusPanel = statusBar.getComponent();
         add(statusPanel, BorderLayout.SOUTH);
 
-        JLabel statusLabel = getStatusLabel();
-        statusPanel.add(statusLabel);
-        statusConsumer = fps -> statusLabel.setText("FPS: " + fps);
+        statusConsumer = fps -> {
+            statusBar.setFps(fps);};
 
         setupAutoPause();
     }
-
-    //TODO: RES/RUN switch status, PWR light, Q light (sound)
-    private JLabel getStatusLabel() {
-        JLabel statusLabel = new JLabel("FPS: ");
-        statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        return statusLabel;
-    }
-
-    private JPanel getStatusPanel() {
-        JPanel statusPanel = new JPanel();
-        statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
-        //statusPanel.setPreferredSize(new Dimension(frame.getWidth(), 16));
-        statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
-        return statusPanel;
-    }
-
-
 
     void setupAutoPause() {
         addFocusListener(new FocusAdapter() {
@@ -67,6 +53,7 @@ public class Case extends JFrame {
             public void focusGained(FocusEvent e) {
                 if (autoPauseEnabled && pauseConsumer != null) {
                     pauseConsumer.accept(false);
+                    statusBar.setPowerOn(true);
                 }
             }
 
@@ -74,6 +61,7 @@ public class Case extends JFrame {
             public void focusLost(FocusEvent e) {
                 if (autoPauseEnabled && pauseConsumer != null) {
                     pauseConsumer.accept(true);
+                    statusBar.setPowerOn(false);
                 }
             }
         });

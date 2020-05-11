@@ -1,10 +1,12 @@
 package net.novaware.chip8.swing.device;
 
 import net.novaware.chip8.core.port.DisplayPort;
+import net.novaware.chip8.core.util.FrequencyCounter;
 
 import javax.accessibility.Accessible;
 import javax.swing.*;
 import java.awt.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -25,8 +27,7 @@ public class Screen extends JComponent implements Accessible { //TODO: make acce
     //TODO: sync & @GuardedBy missing
     private boolean[][] model = new boolean[ROWS][COLUMNS]; // [y][x]
 
-    private long lastPaint;
-    private int fps; //calculate average from 3 frames?
+    private FrequencyCounter fpsCounter = new FrequencyCounter(20, 0.1);
 
     private static final Color BG = new Color(0xADBBAD);
     private static final Color GHOST = new Color(0xA9B4A7); //TODO: implement motion blur
@@ -34,10 +35,19 @@ public class Screen extends JComponent implements Accessible { //TODO: make acce
 
     public Screen() {
         setPreferredSize(new Dimension(COLUMNS * DEFAULT_SCALE, ROWS * DEFAULT_SCALE));
+
+        fpsCounter.initialize();
+        fpsCounter.subscribe(fc -> {
+            if (fpsConsumer != null) {
+                fpsConsumer.accept(fc.getFrequency());
+            }
+        });
     }
 
     @Override
     public void paint(Graphics g) {
+        fpsCounter.takeASample();
+
         final int width = getWidth();
         final int height = getHeight();
 
@@ -55,8 +65,6 @@ public class Screen extends JComponent implements Accessible { //TODO: make acce
 
         g.setColor(BG);
         g.fillRect(0, 0, width, height);
-
-        calculateFps();
 
         modelLock.lock();
 
@@ -85,16 +93,8 @@ public class Screen extends JComponent implements Accessible { //TODO: make acce
         }
 
         modelLock.unlock(); //FIXME: should be in finally
-    }
 
-    private void calculateFps() {
-        long now = System.nanoTime();
-        fps = (int)(1e9 / (now - lastPaint));
-        lastPaint = now;
-
-        if (fpsConsumer != null) {
-            fpsConsumer.accept(fps);
-        }
+        fpsCounter.maybePublish();
     }
 
     public void draw(DisplayPort.Packet packet) {

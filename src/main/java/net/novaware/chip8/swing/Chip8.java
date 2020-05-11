@@ -38,6 +38,10 @@ public class Chip8 {
     private static final Logger LOG = LogManager.getLogger();
 
     public static void main(String[] args) throws Exception {
+        //https://stackoverflow.com/questions/41001623/java-animation-programs-running-jerky-in-linux/41002553#41002553
+        System.setProperty("sun.java2d.opengl", "true"); //https://stackoverflow.com/questions/57948299/why-does-my-custom-swing-component-repaint-faster-when-i-move-the-mouse-java
+        //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
         Path romPath = null;
         String title = null;
 
@@ -58,7 +62,7 @@ public class Chip8 {
 
         Case aCase = new Case();
         aCase.setIconImage(ImageIO.read(icon));
-        aCase.setTitle(title);
+        aCase.setTitle(title + " - Chip8 Emulgator");
         aCase.add(primaryScreen);
 
         //TODO: refactor
@@ -94,6 +98,29 @@ public class Chip8 {
                     case VK_SPACE: return 5;
                     case VK_LEFT: return 4;
                     case VK_RIGHT: return 6;
+                }
+
+                return Keyboard.normalizeKeyCode(keyEvent);
+            };
+        }
+
+        if (title.equals("VERS")) {
+            config.setCpuFrequency(500);
+            mode = DisplayPort.Mode.DIRECT;
+
+            mapper = keyEvent -> {
+                switch(keyEvent.getKeyCode()) {
+                    //player 1
+                    case VK_UP: return 0x7;
+                    case VK_DOWN: return 0xA;
+                    case VK_LEFT: return 1;
+                    case VK_RIGHT: return 2;
+
+                    //player 2
+                    case VK_I: return 0xC;
+                    case VK_K: return 0xD;
+                    case VK_L: return 0xF;
+                    case VK_J: return 0xB;
                 }
 
                 return Keyboard.normalizeKeyCode(keyEvent);
@@ -186,7 +213,6 @@ public class Chip8 {
 
         board.getDisplayPort(DisplayPort.Type.SECONDARY).connect(secondaryScreen::draw);
 
-        board.getAudioPort().connect(buzzer);
         board.getStoragePort().connect(cardridge::toPacket);
 
         Keyboard k = new Keyboard();
@@ -272,6 +298,8 @@ public class Chip8 {
 
         menuBar.getMemoryProtection().accept(ae -> config.setEnforceMemoryRoRwState(menuBar.isMemoryProtectionSelected()));
         menuBar.setMemoryProtectionSelected(config.isEnforceMemoryRoRwState());
+
+        //TODO: maybe use https://docs.oracle.com/javase/tutorial/uiswing/misc/keybinding.html to handle hidden menu case?
 
         menuBar.getFullScreen().accept(ae -> {
             boolean fs = menuBar.isFullScreenSelected();
@@ -372,6 +400,19 @@ public class Chip8 {
             JOptionPane.showMessageDialog(aCase, "Version: 0.0.1-SNAPSHOT\nAuthor: Grzegorz Nowak",
                     "Chip8 Emulgator", JOptionPane.INFORMATION_MESSAGE);
         });
+
+        board.setDelayTimerMonitor(delay -> SwingUtilities.invokeLater(() -> {
+            aCase.statusBar.setDelay(delay);
+        }));
+        board.setSoundTimerMonitor(sound -> SwingUtilities.invokeLater(() -> aCase.statusBar.setSound(sound)));
+
+        board.getAudioPort().connect(p -> {
+            buzzer.accept(p);
+            boolean on = p.isSoundOn();
+            SwingUtilities.invokeLater(()-> {aCase.statusBar.setSoundOn(on);});
+        });
+
+        board.setCpuFrequencyMonitor(f -> aCase.statusBar.setFrequency(f));
 
         board.powerOn();
     }
