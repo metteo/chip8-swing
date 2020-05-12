@@ -46,6 +46,7 @@ public class MenuBarViewImpl implements MenuBarView {
     private JMenu viewMenu;
     private JMenu theme;
     private JRadioButtonMenuItem cosmac;
+    private JRadioButtonMenuItem border;
     private JRadioButtonMenuItem brick;
 
     private JMenu scaling;
@@ -301,6 +302,21 @@ public class MenuBarViewImpl implements MenuBarView {
     @Override
     public boolean isCosmacSelected() {
         return cosmac.isSelected();
+    }
+
+    @Override
+    public Consumer<ActionListener> getBorder() {
+        return border::addActionListener;
+    }
+
+    @Override
+    public void setBorderSelected(boolean selected) {
+        border.setSelected(selected);
+    }
+
+    @Override
+    public boolean isBorderSelected() {
+        return border.isSelected();
     }
 
     @Override
@@ -587,8 +603,12 @@ public class MenuBarViewImpl implements MenuBarView {
         theme.add(cosmac);
         themeGroup.add(cosmac);
 
+        border = new JRadioButtonMenuItem("COSMAC VIP*");
+        border.setToolTipText("* with gray pixel borders");
+        theme.add(border);
+        themeGroup.add(border);
+
         brick = new JRadioButtonMenuItem("Brick Game");
-        brick.setSelected(true);
         theme.add(brick);
         themeGroup.add(brick);
 

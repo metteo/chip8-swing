@@ -1,8 +1,8 @@
-package net.novaware.chip8.swing.ui;
+package net.novaware.chip8.swing;
 
-import net.novaware.chip8.swing.display.Display;
 import net.novaware.chip8.swing.menu.MenuBarViewImpl;
 import net.novaware.chip8.swing.status.StatusBarViewImpl;
+import net.novaware.chip8.swing.ui.JDisplay;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,7 +13,7 @@ public class Window {
 
     private MenuBarViewImpl menuBar;
 
-    private Display display;
+    private JDisplay display;
 
     private StatusBarViewImpl statusBar;
 
@@ -29,8 +29,8 @@ public class Window {
 
         frame.setJMenuBar(menuBar.getComponent());
 
-        display = new Display();
-        frame.add(display.getComponent());
+        //display = new JDisplay();
+        //frame.add(display.getComponent());
 
         statusBar = new StatusBarViewImpl();
         frame.add(statusBar.getComponent(), BorderLayout.SOUTH);

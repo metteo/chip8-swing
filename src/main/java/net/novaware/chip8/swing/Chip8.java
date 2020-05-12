@@ -7,13 +7,19 @@ import net.novaware.chip8.core.config.MutableConfig;
 import net.novaware.chip8.core.port.DisplayPort;
 import net.novaware.chip8.swing.device.*;
 import net.novaware.chip8.swing.menu.MenuBarViewImpl;
+import net.novaware.chip8.swing.ui.DefaultDisplayModel;
+import net.novaware.chip8.swing.ui.JDisplay;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
@@ -57,8 +63,13 @@ public class Chip8 {
 
         final URL icon = Chip8.class.getResource("/c8.png");
 
-        Screen primaryScreen = new Screen();
-        Screen secondaryScreen = new Screen();
+        DefaultDisplayModel primaryDisplayModel = new DefaultDisplayModel();
+        JDisplay primaryScreen = new JDisplay(primaryDisplayModel);
+        primaryScreen.setPreferredScale(10);
+
+        DefaultDisplayModel secondaryDisplayModel = new DefaultDisplayModel();
+        JDisplay secondaryScreen = new JDisplay(secondaryDisplayModel);
+        secondaryScreen.setPreferredScale(6);
 
         Case aCase = new Case();
         aCase.setIconImage(ImageIO.read(icon));
@@ -73,7 +84,7 @@ public class Chip8 {
 
         aCase.pack();
 
-        primaryScreen.fpsConsumer = aCase.statusConsumer;
+        primaryScreen.addPropertyChangeListener("fps", pce -> aCase.statusConsumer.accept((Integer)pce.getNewValue()));
 
         SwingUtilities.invokeLater(() -> aCase.setVisible(true));
 
@@ -208,10 +219,11 @@ public class Chip8 {
         Board board = newBoardFactory(config, clock, new Random()::nextInt)
                 .newBoard();
 
-        board.getDisplayPort(DisplayPort.Type.PRIMARY).connect(primaryScreen::draw);
+//        board.getDisplayPort(DisplayPort.Type.PRIMARY).connect(primaryScreen::draw);
+        board.getDisplayPort(DisplayPort.Type.PRIMARY).connect(primaryDisplayModel::updateWith);
         board.getDisplayPort(DisplayPort.Type.PRIMARY).setMode(mode);
 
-        board.getDisplayPort(DisplayPort.Type.SECONDARY).connect(secondaryScreen::draw);
+        board.getDisplayPort(DisplayPort.Type.SECONDARY).connect(secondaryDisplayModel::updateWith);
 
         board.getStoragePort().connect(cardridge::toPacket);
 
@@ -339,12 +351,41 @@ public class Chip8 {
         });
 
         menuBar.getCosmac().accept(ae -> {
-            out.println("cosmac");
+            primaryScreen.setBackground(Color.GRAY);
+            primaryScreen.setForeground(Color.WHITE);
+            primaryScreen.setGhost(Color.BLACK);
+            primaryScreen.setStyle(JDisplay.Style.SOLID);
+            primaryScreen.repaint();
         });
 
-        menuBar.getBrick().accept(ae -> out.println("brick"));
+        menuBar.getBorder().accept(ae -> {
+            primaryScreen.setBackground(Color.GRAY);
+            primaryScreen.setForeground(Color.WHITE);
+            primaryScreen.setGhost(Color.BLACK);
+            primaryScreen.setStyle(JDisplay.Style.BORDERED);
+            primaryScreen.repaint();
+        });
 
-        AtomicInteger scale = new AtomicInteger(2);
+        menuBar.getBrick().accept(ae -> {
+            primaryScreen.setBackground(new Color(0xADBBAD));
+            primaryScreen.setForeground(Color.BLACK);
+            primaryScreen.setGhost(new Color(0xA9B4A7));
+            primaryScreen.setStyle(JDisplay.Style.BRICKED);
+            primaryScreen.repaint();
+        });
+
+//        display.addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                board.pause();
+//                aCase.statusBar.setPowerOn(false);
+//
+//                //TODO: check state before pausing, maybe it should be resume instead
+//            }
+//        });
+
+        AtomicInteger scale = new AtomicInteger(primaryScreen.getScale());
+        primaryScreen.addPropertyChangeListener("scale", pce -> scale.set((Integer)pce.getNewValue()));
 
         menuBar.getIncreaseScale().accept(ae -> {
             int s = scale.incrementAndGet();
@@ -352,14 +393,25 @@ public class Chip8 {
             menuBar.setIncreaseScale(s + 1);
             menuBar.setCurrentScale(s);
             menuBar.setDecreaseScale(s - 1);
+
+            primaryScreen.setPreferredScale(s);
+            aCase.pack();
         });
 
         menuBar.getDecreaseScale().accept(ae -> {
-            int s = scale.decrementAndGet(); //TODO: handle x0, negatives and max scale for given screen
+            int s = scale.get();
+            if (s < 2) {
+                return;
+            }
+
+            s = scale.decrementAndGet(); //TODO: handle x0, negatives and max scale for given screen
 
             menuBar.setIncreaseScale(s + 1);
             menuBar.setCurrentScale(s);
             menuBar.setDecreaseScale(s - 1);
+
+            primaryScreen.setPreferredScale(s);
+            aCase.pack();
         });
 
         menuBar.getNoProcessing().accept(ae -> {
@@ -377,7 +429,7 @@ public class Chip8 {
             board.getDisplayPort(DisplayPort.Type.PRIMARY).setMode(DisplayPort.Mode.FALLING_EDGE);
         });
 
-        menuBar.getPrimaryDisplay().accept(ae -> out.println("primary"));
+        menuBar.getPrimaryDisplay().accept(ae -> aCase.requestFocus());
         menuBar.getSecondaryDisplay().accept(ae -> {
             Case secCase = new Case();
             secCase.add(secondaryScreen);
@@ -413,6 +465,36 @@ public class Chip8 {
         });
 
         board.setCpuFrequencyMonitor(f -> aCase.statusBar.setFrequency(f));
+
+        primaryScreen.setTransferHandler(new TransferHandler() {
+            @Override
+            public boolean canImport(TransferSupport support) { //TODO: animate?
+                for (DataFlavor flavor : support.getDataFlavors()) {
+                    if (flavor.isFlavorJavaFileListType()) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean importData(TransferSupport support) {
+                try {
+                    final List<File> files = (List<File>) support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                    if (files.size() != 1) {
+                        return false; // single files are supported
+                    }
+
+                    board.getStoragePort().disconnect(); //TODO: combine it with file open
+                    board.getStoragePort().connect(() -> new Cardridge(files.get(0).toPath()).toPacket());
+                    board.hardReset();
+                    return true;
+                } catch (UnsupportedFlavorException | IOException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+        });
 
         board.powerOn();
     }
