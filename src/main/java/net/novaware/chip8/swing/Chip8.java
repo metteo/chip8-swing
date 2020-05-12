@@ -5,7 +5,10 @@ import net.novaware.chip8.core.clock.ClockGenerator;
 import net.novaware.chip8.core.clock.ClockGeneratorJvmImpl;
 import net.novaware.chip8.core.config.MutableConfig;
 import net.novaware.chip8.core.port.DisplayPort;
-import net.novaware.chip8.swing.device.*;
+import net.novaware.chip8.swing.device.Buzzer;
+import net.novaware.chip8.swing.device.Cardridge;
+import net.novaware.chip8.swing.device.Case;
+import net.novaware.chip8.swing.device.Keyboard;
 import net.novaware.chip8.swing.menu.MenuBarViewImpl;
 import net.novaware.chip8.swing.ui.DefaultDisplayModel;
 import net.novaware.chip8.swing.ui.JDisplay;
@@ -18,8 +21,6 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
@@ -467,6 +468,7 @@ public class Chip8 {
         board.setCpuFrequencyMonitor(f -> aCase.statusBar.setFrequency(f));
 
         primaryScreen.setTransferHandler(new TransferHandler() {
+
             @Override
             public boolean canImport(TransferSupport support) { //TODO: animate?
                 for (DataFlavor flavor : support.getDataFlavors()) {
@@ -495,6 +497,8 @@ public class Chip8 {
                 }
             }
         });
+
+        aCase.statusBar.setInfo("Use File menu or drop a ROM to open it.");
 
         board.powerOn();
     }
