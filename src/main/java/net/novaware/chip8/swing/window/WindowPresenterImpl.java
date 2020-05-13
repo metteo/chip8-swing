@@ -5,6 +5,7 @@ import net.novaware.chip8.core.clock.ClockGenerator;
 import net.novaware.chip8.core.config.MutableConfig;
 import net.novaware.chip8.core.port.DisplayPort;
 import net.novaware.chip8.core.port.KeyPort;
+import net.novaware.chip8.swing.device.Buzzer;
 import net.novaware.chip8.swing.display.DisplayPresenter;
 import net.novaware.chip8.swing.display.DisplayPresenterImpl;
 import net.novaware.chip8.swing.menu.MenuBarPresenter;
@@ -20,6 +21,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
 import static javax.swing.JOptionPane.showMessageDialog;
@@ -38,7 +40,12 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
     private DisplayPresenter displayPresenter;
     private StatusBarPresenter statusBarPresenter;
 
+    private Buzzer buzzer = new Buzzer();
+
     private WindowPresenter otherWindow;
+
+    private String path;
+    private BufferedImage icon;
 
     public WindowPresenterImpl(
             WindowView view,
@@ -57,11 +64,14 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
 
     @Override
     public void initialize() {
+        view.setIcon(icon);
+
         menuBarPresenter = new MenuBarPresenterImpl(
                 view.getMenuBar(),
                 config,
                 board,
                 displayPortType,
+                path,
                 //TODO: these should be app wide events on the bus...
                 this::setAppTitle,
                 view::exit,
@@ -103,6 +113,9 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
 
         if (isPrimary()) {
             registerMonitoring();
+
+            buzzer.init();
+            board.getAudioPort().connect(buzzer);
         }
     }
 
@@ -175,7 +188,6 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
         }
 
         WindowView otherView = new WindowViewImpl();
-        //TODO: getIcon().ifPresent(primaryWindowView::setIcon);
 
         otherWindow = new WindowPresenterImpl(
                 otherView,
@@ -184,6 +196,7 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
                 board,
                 DisplayPort.Type.SECONDARY
         );
+        otherWindow.setIcon(icon);
         otherWindow.initialize();
         otherWindow.setOtherWindow(this);
 
@@ -193,6 +206,11 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
     @Override
     public void setOtherWindow(WindowPresenter windowPresenter) {
         otherWindow = windowPresenter;
+    }
+
+    @Override
+    public void setIcon(BufferedImage icon) {
+        this.icon = icon;
     }
 
     private void onPrimaryDisplay() {
@@ -295,6 +313,7 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
         });
     }
 
+    //TODO: change to use common mapping for chip8 emulators
     private static int mapKey(KeyEvent e) {
         final int keyCode = e.getKeyCode();
         int keyIdx = -1;
@@ -311,6 +330,11 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
 
     private void onFocusChange(boolean gained) {
         menuBarPresenter.onFocusChange(gained);
+    }
+
+    @Override
+    public void setPath(String path) {
+        this.path = path;
     }
 
     @Override

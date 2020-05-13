@@ -5,6 +5,7 @@ import net.novaware.chip8.core.clock.ClockGenerator;
 import net.novaware.chip8.core.clock.ClockGeneratorJvmImpl;
 import net.novaware.chip8.core.config.MutableConfig;
 import net.novaware.chip8.core.port.DisplayPort;
+import net.novaware.chip8.swing.device.Buzzer;
 import net.novaware.chip8.swing.window.WindowPresenter;
 import net.novaware.chip8.swing.window.WindowPresenterImpl;
 import net.novaware.chip8.swing.window.WindowView;
@@ -26,7 +27,12 @@ public class Chip8 {
 
     private static final Logger LOG = LogManager.getLogger();
 
+    private String path;
     private WindowPresenter primaryWindow;
+
+    public Chip8(String path) {
+        this.path = path;
+    }
 
     void start() {
         //TODO: update config with settings from preferences?
@@ -38,8 +44,15 @@ public class Chip8 {
                 .newBoard();
 
         SwingUtilities.invokeLater(() -> {
+            try { //TODO: allow runtime change from menu
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                    | UnsupportedLookAndFeelException e
+            ) {
+                LOG.error("Unable to set L&F: ", e);
+            }
+
             WindowView primaryWindowView = new WindowViewImpl();
-            getIcon().ifPresent(primaryWindowView::setIcon);
 
             primaryWindow = new WindowPresenterImpl(
                     primaryWindowView,
@@ -48,6 +61,9 @@ public class Chip8 {
                     board,
                     DisplayPort.Type.PRIMARY
             );
+
+            primaryWindow.setPath(path);
+            getIcon().ifPresent(primaryWindow::setIcon);
             primaryWindow.initialize();
             primaryWindow.start();
         });
@@ -67,7 +83,9 @@ public class Chip8 {
     public static void main(String[] args) {
         System.setProperty("sun.java2d.opengl", "true"); //TODO: set from script
 
-        new Chip8().start();
+        String path = args.length == 1 ? args[0] : null;
+
+        new Chip8(path).start();
     }
 
 }

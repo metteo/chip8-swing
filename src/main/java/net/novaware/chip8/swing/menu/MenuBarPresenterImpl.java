@@ -32,6 +32,7 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
     private final MutableConfig config;
     private final Board board;
     private final DisplayPort.Type dpType;
+    private final String path;
     private final Consumer<String> titleConsumer;
     private final Runnable exitRun;
     private final Supplier<JDisplay.Style> styleGetter;
@@ -52,6 +53,7 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
             MutableConfig config,
             Board board,
             DisplayPort.Type dpType,
+            String path,
 
             Consumer<String> titleConsumer,
             Runnable exitRun,
@@ -66,6 +68,7 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
         this.config = config;
         this.board = board;
         this.dpType = dpType;
+        this.path = path;
         this.titleConsumer = titleConsumer;
         this.exitRun = exitRun;
         this.styleGetter = styleGetter;
@@ -105,6 +108,7 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
         view.getAbout().accept(ae -> onAbout());
 
         setDefaultStorage();
+        scheduleFileOpen();
         updatePauseMenus();
         updateCompatibilityMenus();
         updateFrequencyMenus();
@@ -379,6 +383,18 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
         openWorker.execute();
     }
 
+    private void scheduleFileOpen() {
+        if (path != null) {
+            File f = new File(path);
+
+            if (f.exists()) {
+                //this is async action, board already starts and this will trigger hard reset when finished
+                //the reason why cmd line argument causes 2 beeps at the start.
+                onOpen(f);
+            }
+        }
+    }
+
     private void setDefaultStorage() {
         board.getStoragePort().disconnect();
         board.getStoragePort().connect(() -> new StoragePort.Packet(){
@@ -394,6 +410,8 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
                 return jump[uint(i)];
             }
         });
+
+        titleConsumer.accept("Boot-128");
     }
 
 

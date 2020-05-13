@@ -101,7 +101,7 @@ public class StatusBarViewImpl implements StatusBarView {
     private void initSoundOn() {
         soundOnPanel = new JPanel(new BorderLayout());
         soundOnPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
-        soundOnPanel.setPreferredSize(new Dimension(30, DEFAULT_HEIGHT));
+        soundOnPanel.setPreferredSize(new Dimension(35, DEFAULT_HEIGHT));
         component.add(soundOnPanel);
 
         soundOn = new JLabel("Q ");
