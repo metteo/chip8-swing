@@ -1,8 +1,8 @@
 package net.novaware.chip8.swing.status;
 
-import net.novaware.chip8.swing.mvp.HasComponent;
+import net.novaware.chip8.swing.mvp.View;
 
-public interface StatusBarView extends HasComponent {
+public interface StatusBarView extends View {
 
     void setInfo(String info);
 

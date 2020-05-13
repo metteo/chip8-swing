@@ -126,6 +126,8 @@ public class MenuBarViewImpl implements MenuBarView {
 
     @Override
     public void setRecentOpens(List<File> recents) {
+        openRecent.removeAll();
+
         recents.stream().map(f -> {
             JMenuItem recent = new JMenuItem(f.getName());
             recent.setToolTipText(f.toString());
@@ -252,6 +254,11 @@ public class MenuBarViewImpl implements MenuBarView {
     @Override
     public Consumer<ActionListener> getDecreaseFrequency() {
         return decreaseFrequency::addActionListener;
+    }
+
+    @Override
+    public void setDecreaseFrequencyEnabled(boolean enabled) {
+        decreaseFrequency.setEnabled(enabled);
     }
 
     @Override
@@ -532,8 +539,8 @@ public class MenuBarViewImpl implements MenuBarView {
         pause.getAccessibleContext().setAccessibleDescription("Pause the CPU");
         editMenu.add(pause);
 
-        resume = new JMenuItem("Resume", KeyEvent.VK_R);
-        resume.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK));
+        resume = new JMenuItem("Resume");
+        resume.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK));
         resume.getAccessibleContext().setAccessibleDescription("Resume the CPU");
         resume.setEnabled(false);
         editMenu.add(resume);
@@ -545,7 +552,8 @@ public class MenuBarViewImpl implements MenuBarView {
 
         editMenu.addSeparator();
 
-        mute = new JCheckBoxMenuItem("Mute");
+        mute = new JCheckBoxMenuItem("Mute"); //TODO: sound: sound on ST=1, mute
+        mute.setEnabled(false);
         editMenu.add(mute);
 
         editMenu.addSeparator();

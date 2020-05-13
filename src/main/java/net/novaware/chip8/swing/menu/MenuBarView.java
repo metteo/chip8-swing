@@ -47,6 +47,7 @@ public interface MenuBarView extends View {
 
     Consumer<ActionListener> getIncreaseFrequency();
     Consumer<ActionListener> getDecreaseFrequency();
+    void setDecreaseFrequencyEnabled(boolean enabled);
 
     void setFrequency(int frequency);
 

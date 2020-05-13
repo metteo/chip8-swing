@@ -51,6 +51,10 @@ public class JDisplay extends JComponent {
         this.style = style;
     }
 
+    public Style getStyle() {
+        return style;
+    }
+
     public int getScale() {
         return scale;
     }
