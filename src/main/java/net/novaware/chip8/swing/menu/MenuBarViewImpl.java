@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static javax.swing.SwingUtilities.windowForComponent;
 import static net.novaware.chip8.core.util.AssertUtil.assertArgument;
 
 public class MenuBarViewImpl implements MenuBarView {
@@ -111,7 +112,7 @@ public class MenuBarViewImpl implements MenuBarView {
     public void showOpenDialog(Consumer<File> fileConsumer) {
         assertArgument(fileConsumer != null, "fileConsumer must not be null");
 
-        final int result = fileChooser.showOpenDialog(open);
+        final int result = fileChooser.showOpenDialog(windowForComponent(component.getRootPane()));
         switch(result) {
             case JFileChooser.ERROR_OPTION:
                 //TODO: handle the error?
@@ -757,10 +758,10 @@ public class MenuBarViewImpl implements MenuBarView {
 
                 //TODO: update both windows
                 SwingUtilities.updateComponentTreeUI(component.getRootPane());
+                fileChooser = new JFileChooser();
 
                 //  Use custom decorations when supported by the LAF
-
-                JFrame frame = (JFrame) SwingUtilities.windowForComponent(component.getRootPane());
+                JFrame frame = (JFrame) windowForComponent(component.getRootPane());
                 frame.dispose();
                 frame.setVisible(true);
             } catch (Exception ex) {
