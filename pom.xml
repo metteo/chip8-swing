@@ -117,7 +117,7 @@
                     <programs>
                         <program>
                             <mainClass>net.novaware.chip8.swing.Chip8</mainClass>
-                            <name>chip8-cpe</name> //class-path executable
+                            <id>chip8-cpe</id> <!-- class-path executable -->
                         </program>
                     </programs>
                 </configuration>
