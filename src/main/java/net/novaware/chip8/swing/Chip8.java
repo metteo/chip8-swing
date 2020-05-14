@@ -5,7 +5,6 @@ import net.novaware.chip8.core.clock.ClockGenerator;
 import net.novaware.chip8.core.clock.ClockGeneratorJvmImpl;
 import net.novaware.chip8.core.config.MutableConfig;
 import net.novaware.chip8.core.port.DisplayPort;
-import net.novaware.chip8.swing.device.Buzzer;
 import net.novaware.chip8.swing.window.WindowPresenter;
 import net.novaware.chip8.swing.window.WindowPresenterImpl;
 import net.novaware.chip8.swing.window.WindowView;
@@ -70,7 +69,7 @@ public class Chip8 {
     }
 
     private static Optional<BufferedImage> getIcon() {
-        final URL iconUrl = Chip8Backup.class.getResource("/c8.png");
+        final URL iconUrl = Chip8.class.getResource("/c8.png");
 
         try {
             return Optional.of(ImageIO.read(iconUrl));

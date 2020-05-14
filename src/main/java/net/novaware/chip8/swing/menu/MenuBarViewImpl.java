@@ -93,7 +93,6 @@ public class MenuBarViewImpl implements MenuBarView {
         component = menuBar;
     }
 
-    //https://docs.oracle.com/javase/tutorial/uiswing/components/menu.html
     @Override
     public JMenuBar getComponent() {
         return component;

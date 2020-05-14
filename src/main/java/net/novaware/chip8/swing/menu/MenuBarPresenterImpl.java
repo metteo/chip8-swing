@@ -333,6 +333,18 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
         board.hardReset();
     }
 
+    @Override
+    public void open(File file) {
+        onOpen(file);
+    }
+
+    @Override
+    public void updateCompatMenus() {
+        updateCompatibilityMenus();
+        updateFrequencyMenus();
+        updateMemoryProtectionMenu();
+    }
+
     private void onOpen(File file) {
         if (openWorker != null) {
             //TODO: show dialog that the file is loading

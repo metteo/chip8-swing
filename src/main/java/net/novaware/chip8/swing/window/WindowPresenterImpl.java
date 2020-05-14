@@ -11,20 +11,27 @@ import net.novaware.chip8.swing.display.DisplayPresenterImpl;
 import net.novaware.chip8.swing.menu.MenuBarPresenter;
 import net.novaware.chip8.swing.menu.MenuBarPresenterImpl;
 import net.novaware.chip8.swing.mvp.AbstractPresenter;
+import net.novaware.chip8.swing.profile.ProfileStub;
 import net.novaware.chip8.swing.status.StatusBarPresenter;
 import net.novaware.chip8.swing.status.StatusBarPresenterImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static javax.swing.JOptionPane.showMessageDialog;
+import static net.novaware.chip8.core.util.HexUtil.toHexString;
 import static net.novaware.chip8.core.util.UnsignedUtil.ubyte;
 
 public class WindowPresenterImpl extends AbstractPresenter<WindowView> implements WindowPresenter {
@@ -99,6 +106,7 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
         setAppTitle("");
         updateDistractionMenu();
         updateDecorationMenu();
+        registerDnD();
 
         //TODO: window takes over some menubar responsibility (easier from here)
         view.getMenuBar().getDecoration().accept(ae -> onDecoration());
@@ -117,6 +125,39 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
             buzzer.init();
             board.getAudioPort().connect(buzzer);
         }
+
+        view.getStatusBar().setInfo("Ready.");
+    }
+
+    private void registerDnD() { //TODO: make part of display?
+        view.getDisplay().getComponent().setTransferHandler(new TransferHandler() {
+
+            @Override
+            public boolean canImport(TransferSupport support) { //TODO: animate?, make optional in menu so users can figure it out
+                for (DataFlavor flavor : support.getDataFlavors()) {
+                    if (flavor.isFlavorJavaFileListType()) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public boolean importData(TransferSupport support) {
+                try {
+                    final List<File> files = (List<File>) support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                    if (files.size() != 1) {
+                        return false; // single files are supported
+                    }
+
+                    menuBarPresenter.open(files.get(0));
+                    return true;
+                } catch (UnsupportedFlavorException | IOException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+        });
     }
 
     /**
@@ -274,6 +315,9 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
             title = appName + " - " + title;
         }
         view.setTitle(title);
+
+        ProfileStub.loadProfile(appName, config);
+        menuBarPresenter.updateCompatMenus();
     }
 
     private void registerFocusListener() {
@@ -292,7 +336,13 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
 
     private void registerKeyListener() {
         //TODO: collect, reverse map and display the keys checked by the game
-        final Consumer<KeyPort.InputPacket> keyReceiver = board.getKeyPort().connect(op -> {});
+        final Consumer<KeyPort.InputPacket> keyReceiver = board.getKeyPort().connect(op -> {
+            for (int i = 0; i < 0x10; ++i) {
+                if (op.isKeyUsed(ubyte(i))) {
+                    System.out.println("Key used: " + toHexString(ubyte(i)));
+                }
+            }
+        });
 
         view.getKeyRegistry().accept(new KeyAdapter() {
             @Override
