@@ -72,11 +72,8 @@ public class Chip8 {
     }
 
     public static void main(String[] args) {
-        System.setProperty("sun.java2d.opengl", "true"); //TODO: set from script
-
         String path = args.length == 1 ? args[0] : null;
 
         new Chip8(path).start();
     }
-
 }

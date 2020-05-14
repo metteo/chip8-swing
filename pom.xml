@@ -107,17 +107,40 @@
                     <assembleDirectory>${project.build.directory}/chip8-emulgator</assembleDirectory>
                     <repositoryLayout>flat</repositoryLayout>
                     <repositoryName>lib</repositoryName>
-                    <platforms>
-                        <platform>windows</platform>
-                        <platform>unix</platform>
-                    </platforms>
                     <binFileExtensions>
                         <unix>.sh</unix>
                     </binFileExtensions>
                     <programs>
+                        <!-- TODO: https://docs.oracle.com/javase/7/docs/technotes/guides/2d/flags.html -->
                         <program>
-                            <mainClass>net.novaware.chip8.swing.Chip8</mainClass>
                             <id>chip8-cpe</id> <!-- class-path executable -->
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                            <mainClass>net.novaware.chip8.swing.Chip8</mainClass>
+                            <jvmSettings>
+                                <systemProperty>sun.java2d.opengl=true</systemProperty>
+                            </jvmSettings>
+                        </program>
+                        <program>
+                            <id>chip8-mpe</id> <!-- module-path executable, needs altering -->
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                            <mainClass>net.novaware.chip8.swing.Chip8</mainClass>
+                            <jvmSettings>
+                                <systemProperty>sun.java2d.opengl=true</systemProperty>
+                            </jvmSettings>
+                        </program>
+                        <program>
+                            <id>chip8-win</id>
+                            <platforms>
+                                <platform>windows</platform>
+                            </platforms>
+                            <mainClass>net.novaware.chip8.swing.Chip8</mainClass>
+                            <jvmSettings>
+                                <systemProperty>sun.java2d.d3d=false</systemProperty>
+                            </jvmSettings>
                         </program>
                     </programs>
                 </configuration>
