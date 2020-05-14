@@ -103,7 +103,6 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
         registerFocusListener();
         registerKeyListener();
         registerFpsConsumer();
-        setAppTitle("");
         updateDistractionMenu();
         updateDecorationMenu();
         registerDnD();
