@@ -43,14 +43,6 @@ public class Chip8 {
                 .newBoard();
 
         SwingUtilities.invokeLater(() -> {
-            try { //TODO: allow runtime change from menu
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                    | UnsupportedLookAndFeelException e
-            ) {
-                LOG.error("Unable to set L&F: ", e);
-            }
-
             WindowView primaryWindowView = new WindowViewImpl();
 
             primaryWindow = new WindowPresenterImpl(

@@ -1,7 +1,10 @@
 package net.novaware.chip8.swing.menu;
 
 import javax.swing.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
@@ -59,6 +62,7 @@ public class MenuBarViewImpl implements MenuBarView {
     private JRadioButtonMenuItem merge;
     private JRadioButtonMenuItem fallingEdge;
 
+    private JMenu laf;
     private JCheckBoxMenuItem decoration;
     private JCheckBoxMenuItem distraction;
     private JCheckBoxMenuItem fullScreen;
@@ -656,6 +660,9 @@ public class MenuBarViewImpl implements MenuBarView {
 
         viewMenu.addSeparator();
 
+        laf = initLaFMenu();
+        viewMenu.add(laf);
+
         decoration = new JCheckBoxMenuItem("Decorations");
         decoration.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0));
         decoration.getAccessibleContext().setAccessibleDescription("Toggle decorations (title bar, window buttons)");
@@ -699,5 +706,67 @@ public class MenuBarViewImpl implements MenuBarView {
 
         about = new JMenuItem("About", KeyEvent.VK_A);
         helpMenu.add(about);
+    }
+
+    //FIXME: move to window presenter to allow sync update of both windows
+    //Part of https://tips4java.wordpress.com/2008/10/09/uimanager-defaults/
+    private JMenu initLaFMenu() {
+        ButtonGroup lafGroup = new ButtonGroup();
+
+        JMenu menu = new JMenu("Look & Feel");
+        menu.setMnemonic('L');
+
+        String lafId = UIManager.getLookAndFeel().getID();
+        UIManager.LookAndFeelInfo[] lafInfo = UIManager.getInstalledLookAndFeels();
+
+        for (int i = 0; i < lafInfo.length; i++) {
+            String laf = lafInfo[i].getClassName();
+            String name = lafInfo[i].getName();
+
+            System.out.println(name + ": " + laf);
+
+            Action action = new ChangeLookAndFeelAction(laf, name);
+            JRadioButtonMenuItem mi = new JRadioButtonMenuItem(action);
+            menu.add(mi);
+            lafGroup.add(mi);
+
+            if (name.startsWith(lafId)) { // GTK vs GTK+
+                mi.setSelected(true);
+            }
+        }
+
+        return menu;
+    }
+
+    /*
+     *  Change the LAF and recreate the UIManagerDefaults so that the properties
+     *  of the new LAF are correctly displayed.
+     */
+    class ChangeLookAndFeelAction extends AbstractAction {
+        private String laf;
+
+        protected ChangeLookAndFeelAction(String laf, String name) {
+            this.laf = laf;
+            putValue(Action.NAME, name);
+            putValue(Action.SHORT_DESCRIPTION, getValue(Action.NAME));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                UIManager.setLookAndFeel(laf);
+
+                //TODO: update both windows
+                SwingUtilities.updateComponentTreeUI(component.getRootPane());
+
+                //  Use custom decorations when supported by the LAF
+
+                JFrame frame = (JFrame) SwingUtilities.windowForComponent(component.getRootPane());
+                frame.dispose();
+                frame.setVisible(true);
+            } catch (Exception ex) {
+                System.out.println("Failed loading L&F: " + laf); //TODO: handle exception
+                ex.printStackTrace();
+            }
+        }
     }
 }
