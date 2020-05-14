@@ -91,6 +91,37 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>2.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <assembleDirectory>${project.build.directory}/chip8-emulgator</assembleDirectory>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <repositoryName>lib</repositoryName>
+                    <platforms>
+                        <platform>windows</platform>
+                        <platform>unix</platform>
+                    </platforms>
+                    <binFileExtensions>
+                        <unix>.sh</unix>
+                    </binFileExtensions>
+                    <programs>
+                        <program>
+                            <mainClass>net.novaware.chip8.swing.Chip8</mainClass>
+                            <name>chip8-cpe</name> //class-path executable
+                        </program>
+                    </programs>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -155,12 +186,6 @@
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>1.26</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.github.vincenzopalazzo</groupId>
-            <artifactId>material-ui-swing</artifactId>
-            <version>1.1.1-rc1</version>
         </dependency>
     </dependencies>
 </project>
