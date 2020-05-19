@@ -3,6 +3,7 @@ package net.novaware.chip8.swing.window;
 import net.novaware.chip8.core.Board;
 import net.novaware.chip8.core.clock.ClockGenerator;
 import net.novaware.chip8.core.config.MutableConfig;
+import net.novaware.chip8.core.port.DebugPort;
 import net.novaware.chip8.core.port.DisplayPort;
 import net.novaware.chip8.core.port.KeyPort;
 import net.novaware.chip8.swing.device.Buzzer;
@@ -161,45 +162,60 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
 
     /**
      * Primary window only!
-     *
-     * Low quality but will have to do...
      */
     private void registerMonitoring() {
-        board.setExceptionHandler(e -> {
-            //TODO: report to MenuBarPresenter that file open failed?
-            LOG.error("Exception from the Board: ", e);
+        board.getDebugPort().connect(new DebugPort.Receiver() {
+            @Override
+            public void onException(Exception e) {
+                //TODO: report to MenuBarPresenter that file open failed?
+                LOG.error("Exception from the Board: ", e);
 
-            SwingUtilities.invokeLater(() -> {
-                showMessageDialog(view.getComponent().getTopLevelAncestor(), e.toString(), "Error",
-                        JOptionPane.ERROR_MESSAGE);
+                SwingUtilities.invokeLater(() -> {
+                    showMessageDialog(view.getComponent().getTopLevelAncestor(), e.toString(), "Error",
+                            JOptionPane.ERROR_MESSAGE);
 
-                menuBarPresenter.forcePause(); //to prevent dialogs showing up one after the other
-            });
+                    menuBarPresenter.forcePause(); //to prevent dialogs showing up one after the other
+                });
+            }
+
+            @Override
+            public void onDelayTimerChange(int dt) {
+                SwingUtilities.invokeLater(() -> {
+                    view.getStatusBar().setDelay(dt);
+                    if (otherWindow != null) {
+                        otherWindow.getView().getStatusBar().setDelay(dt);
+                    }
+                });
+            }
+
+            @Override
+            public void onSoundTimerChange(int st) {
+                SwingUtilities.invokeLater(() -> {
+                    view.getStatusBar().setSound(st);
+                    view.getStatusBar().setSoundOn(st > 0); // q line blinked even for st = 1
+
+                    if (otherWindow != null) {
+                        otherWindow.getView().getStatusBar().setSound(st);
+                        otherWindow.getView().getStatusBar().setSoundOn(st > 0);
+                    }
+                });
+            }
+
+            @Override
+            public void onCpuFrequencyChange(int f) {
+                SwingUtilities.invokeLater(()-> {
+                    view.getStatusBar().setFrequency(f);
+                    if (otherWindow != null) {
+                        otherWindow.getView().getStatusBar().setFrequency(f);
+                    }
+                });
+            }
+
+            @Override
+            public void onStateChange(boolean paused) {
+                //TODO: move pause state handling here (from menu presenter)
+            }
         });
-
-        board.setCpuFrequencyMonitor(f -> SwingUtilities.invokeLater(()-> {
-            view.getStatusBar().setFrequency(f);
-            if (otherWindow != null) {
-                otherWindow.getView().getStatusBar().setFrequency(f);
-            }
-        }));
-
-        board.setDelayTimerMonitor(dt -> SwingUtilities.invokeLater(() -> {
-            view.getStatusBar().setDelay(dt);
-            if (otherWindow != null) {
-                otherWindow.getView().getStatusBar().setDelay(dt);
-            }
-        }));
-
-        board.setSoundTimerMonitor(st -> SwingUtilities.invokeLater(() -> {
-            view.getStatusBar().setSound(st);
-            view.getStatusBar().setSoundOn(st > 0); // q line blinked even for st = 1
-
-            if (otherWindow != null) {
-                otherWindow.getView().getStatusBar().setSound(st);
-                otherWindow.getView().getStatusBar().setSoundOn(st > 0);
-            }
-        }));
     }
 
     private void updateWindowMenus() {
