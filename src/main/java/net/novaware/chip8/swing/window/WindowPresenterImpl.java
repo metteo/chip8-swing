@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static javax.swing.JOptionPane.showMessageDialog;
 import static net.novaware.chip8.core.util.HexUtil.toHexString;
@@ -52,8 +53,10 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
 
     private WindowPresenter otherWindow;
 
-    private String path;
-    private BufferedImage icon;
+    private String path; //TODO: app scope (not window)
+    private BufferedImage icon; //TODO: app scope (not window)
+
+    private Function<KeyEvent, Integer> customKeyMapper;
 
     public WindowPresenterImpl(
             WindowView view,
@@ -331,7 +334,7 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
         }
         view.setTitle(title);
 
-        ProfileStub.loadProfile(appName, config);
+        customKeyMapper = ProfileStub.loadProfile(appName, config);
         menuBarPresenter.updateCompatMenus();
     }
 
@@ -379,7 +382,12 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
     }
 
     //TODO: change to use common mapping for chip8 emulators
-    private static int mapKey(KeyEvent e) {
+    private int mapKey(KeyEvent e) {
+        final int keyOverride = customKeyMapper.apply(e);
+        if (keyOverride != -1) {
+            return keyOverride;
+        }
+
         final int keyCode = e.getKeyCode();
         int keyIdx = -1;
         if (keyCode >= KeyEvent.VK_0 && keyCode <= KeyEvent.VK_9) {

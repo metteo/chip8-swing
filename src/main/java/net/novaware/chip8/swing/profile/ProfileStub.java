@@ -1,7 +1,6 @@
 package net.novaware.chip8.swing.profile;
 
 import net.novaware.chip8.core.config.MutableConfig;
-import net.novaware.chip8.core.port.DisplayPort;
 
 import java.awt.event.KeyEvent;
 import java.util.function.Function;
@@ -10,7 +9,7 @@ import static java.awt.event.KeyEvent.*;
 
 public class ProfileStub {
 
-    public static void loadProfile(String title, MutableConfig config) {
+    public static Function<KeyEvent, Integer> loadProfile(String title, MutableConfig config) {
         MutableConfig defaults = new MutableConfig();
 
         config.setLegacyShift(defaults.isLegacyShift());
@@ -19,14 +18,12 @@ public class ProfileStub {
         config.setCpuFrequency(defaults.getCpuFrequency());
         config.setEnforceMemoryRoRwState(defaults.isEnforceMemoryRoRwState());
 
-        Function<KeyEvent, Integer> mapper;
-        DisplayPort.Mode mode = DisplayPort.Mode.MERGE_FRAME;
+        Function<KeyEvent, Integer> mapper = ke -> -1;
 
         // TODO: create a ROM library with game profiles instead
         if (title.equals("INVADERS")) {
             config.setCpuFrequency(1500);
             config.setLegacyShift(false);
-            mode = DisplayPort.Mode.FALLING_EDGE;
 
             mapper = keyEvent -> {
                 switch(keyEvent.getKeyCode()) {
@@ -41,7 +38,7 @@ public class ProfileStub {
 
         if (title.equals("VERS")) {
             config.setCpuFrequency(500);
-            mode = DisplayPort.Mode.DIRECT;
+            config.setVerticalClipping(false);
 
             mapper = keyEvent -> {
                 switch(keyEvent.getKeyCode()) {
@@ -62,17 +59,21 @@ public class ProfileStub {
             };
         }
 
+        if (title.equals("BLITZ")) {
+            config.setVerticalClipping(true);
+        }
+
         if (title.equals("BRIX")) {
             config.setCpuFrequency(700);
             config.setEnforceMemoryRoRwState(false);
-            mode = DisplayPort.Mode.MERGE_FRAME;
+            config.setHorizontalClipping(true);
+            config.setWrapping(false);
         }
 
         if (title.equals("BLINKY")) {
             config.setEnforceMemoryRoRwState(false);
             config.setLegacyLoadStore(false);
             config.setLegacyShift(false);
-            mode = DisplayPort.Mode.MERGE_FRAME;
 
             mapper = keyEvent -> {
                 switch(keyEvent.getKeyCode()) {
@@ -88,7 +89,6 @@ public class ProfileStub {
 
         if (title.equals("PONG2")) {
             config.setEnforceMemoryRoRwState(false);
-            mode = DisplayPort.Mode.FALLING_EDGE;
 
             mapper = keyEvent -> {
                 switch(keyEvent.getKeyCode()) {
@@ -104,13 +104,11 @@ public class ProfileStub {
 
         if (title.equals("UFO")) {
             config.setCpuFrequency(700);
-            mode = DisplayPort.Mode.MERGE_FRAME;
         }
 
         if (title.equals("TANK")) {
             config.setCpuFrequency(1200);
             config.setEnforceMemoryRoRwState(false);
-            mode = DisplayPort.Mode.MERGE_FRAME;
 
             mapper = keyEvent -> {
                 switch(keyEvent.getKeyCode()) {
@@ -137,5 +135,7 @@ public class ProfileStub {
             config.setLegacyLoadStore(false);
             config.setLegacyAddressSum(false);
         }
+
+        return mapper;
     }
 }

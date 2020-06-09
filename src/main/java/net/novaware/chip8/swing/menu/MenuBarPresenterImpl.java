@@ -32,21 +32,21 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
     private final MutableConfig config;
     private final Board board;
     private final DisplayPort.Type dpType;
-    private final String path;
-    private final Consumer<String> titleConsumer;
-    private final Runnable exitRun;
+    private final String path; //TODO: app scope (not window)
+    private final Consumer<String> titleConsumer; //TODO: app scope (not window)
+    private final Runnable exitRun; //TODO: app scope (not window)
     private final Supplier<JDisplay.Style> styleGetter;
     private final Consumer<JDisplay.Style> styleSetter;
     private final IntSupplier scaleGetter;
     private final IntConsumer scaleSetter;
-    private final Consumer<Boolean> pauseIndicator;
+    private final Consumer<Boolean> pauseIndicator; //TODO: app scope (not window)
 
-    private SwingWorker<StoragePort.Packet, Void> openWorker;
+    private SwingWorker<StoragePort.Packet, Void> openWorker; //TODO: app scope (not window)
 
-    private LinkedList<File> recentFiles = new LinkedList<>();
+    private LinkedList<File> recentFiles = new LinkedList<>(); //TODO: app scope (not window)
 
-    private boolean autoPause = true;
-    private boolean paused = false;
+    private boolean autoPause = true; //TODO: app scope (not window)
+    private boolean paused = false; //TODO: app scope (not window)
 
     public MenuBarPresenterImpl(
             MenuBarView view,
@@ -107,7 +107,7 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
         view.getKeys().accept(ae -> onKeys());
         view.getAbout().accept(ae -> onAbout());
 
-        setDefaultStorage();
+        setDefaultStorage(); //TODO: should not be called by secondary window
         scheduleFileOpen();
         updatePauseMenus();
         updateCompatibilityMenus();
