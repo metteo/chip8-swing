@@ -6,20 +6,21 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WaveGenerator implements AutoCloseable, Runnable {
 
     private static final int BYTE = 8;
     private static final int SAMPLE_RATE = 44100;
 
-    private AtomicBoolean playing = new AtomicBoolean(false);
+    //writing happens only from emulator thread
+    private volatile boolean playing = false;
 
     private Waveform waveform = new SquareWave(16, 150);
 
     private AudioFormat audioFormat;
     private SourceDataLine sourceDataLine;
 
+    //owned by executor below
     private byte[] sourceDataBuffer = new byte[256];
     private int sampleIndex = 1;
 
@@ -41,13 +42,13 @@ public class WaveGenerator implements AutoCloseable, Runnable {
     }
 
     public void play() {
-        if (playing.get()) {
+        if (playing) {
             return;
         }
 
         try {
             sourceDataLine.open(audioFormat, sourceDataBuffer.length * 2);
-            playing.set(true);
+            playing = true;
             executor.submit(this);
         } catch (LineUnavailableException e) {
             throw new RuntimeException("Unable to open source data line: ", e);
@@ -60,7 +61,7 @@ public class WaveGenerator implements AutoCloseable, Runnable {
         sourceDataLine.write(sourceDataBuffer, 0, sourceDataBuffer.length);
         sourceDataLine.start();
 
-        while (playing.get()) {
+        while (playing) {
             generateSamples();
             sourceDataLine.write(sourceDataBuffer, 0, sourceDataBuffer.length);
         }
@@ -73,8 +74,8 @@ public class WaveGenerator implements AutoCloseable, Runnable {
     }
 
     public void stop() {
-        if (playing.get()) {
-            playing.set(false); //TODO: synchronize
+        if (playing) {
+            playing = false;
             sourceDataLine.stop();
             sourceDataLine.flush();
         }

@@ -56,7 +56,7 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
     private String path; //TODO: app scope (not window)
     private BufferedImage icon; //TODO: app scope (not window)
 
-    private Function<KeyEvent, Integer> customKeyMapper;
+    private Function<KeyEvent, Integer> customKeyMapper = ke -> -1;
 
     public WindowPresenterImpl(
             WindowView view,

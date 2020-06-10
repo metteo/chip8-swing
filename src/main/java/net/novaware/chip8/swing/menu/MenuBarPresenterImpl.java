@@ -107,8 +107,11 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
         view.getKeys().accept(ae -> onKeys());
         view.getAbout().accept(ae -> onAbout());
 
-        setDefaultStorage(); //TODO: should not be called by secondary window
-        scheduleFileOpen();
+        if (dpType == DisplayPort.Type.PRIMARY) {
+            setDefaultStorage();
+            scheduleFileOpen();
+        }
+
         updatePauseMenus();
         updateCompatibilityMenus();
         updateFrequencyMenus();
