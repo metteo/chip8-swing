@@ -46,8 +46,11 @@ public interface MenuBarView extends View {
     boolean isLegacyAddressSumSelected();
 
     Consumer<ActionListener> getIncreaseFrequency();
+    Consumer<ActionListener> getCurrentFrequency();
     Consumer<ActionListener> getDecreaseFrequency();
     void setDecreaseFrequencyEnabled(boolean enabled);
+
+    void showFrequencyDialog(String current, Consumer<String> newFrequencyConsumer);
 
     void setFrequency(int frequency);
 

@@ -6,6 +6,8 @@ import net.novaware.chip8.core.port.DisplayPort;
 import net.novaware.chip8.core.port.StoragePort;
 import net.novaware.chip8.swing.mvp.AbstractPresenter;
 import net.novaware.chip8.swing.ui.JDisplay;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,13 +23,16 @@ import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
+import static java.lang.Integer.parseInt;
 import static javax.swing.JOptionPane.showMessageDialog;
 import static net.novaware.chip8.core.util.UnsignedUtil.uint;
 
 public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> implements MenuBarPresenter {
 
+    private static final Logger LOG = LogManager.getLogger();
+
     public static final int FREQUENCY_STEP = 100;
-    public static final int FREQUENCY_MIN = 100;
+    public static final int FREQUENCY_MIN = 1;
 
     private final MutableConfig config;
     private final Board board;
@@ -93,6 +98,7 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
         view.getLegacyLoadStore().accept(ae -> onLegacyLoadStore());
         view.getLegacyAddressSum().accept(ae -> onLegacyAddressSum());
         view.getIncreaseFrequency().accept(ae -> onIncreaseFrequency());
+        view.getCurrentFrequency().accept(ae -> onCurrentFrequency());
         view.getDecreaseFrequency().accept(ae -> onDecreaseFrequency());
         view.getMemoryProtection().accept(ae -> onMemoryProtection());
         view.getCosmac().accept(ae -> onStyle(JDisplay.Style.SOLID));
@@ -226,6 +232,30 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
     private void onIncreaseFrequency() {
         int frequency = config.getCpuFrequency() + FREQUENCY_STEP;
 
+        onUpdateFrequency(frequency);
+    }
+
+    private void onCurrentFrequency() {
+        view.showFrequencyDialog(config.getCpuFrequency() + "", this::onUpdateFrequency);
+    }
+
+    private void onUpdateFrequency(String frequency) {
+        if (frequency == null) {
+            return;
+        }
+
+        try {
+            onUpdateFrequency(parseInt(frequency));
+        } catch (NumberFormatException e) {
+            LOG.warn("Unable to parse frequency, ignoring: ", e);
+        }
+    }
+
+    private void onUpdateFrequency(int frequency) {
+        if (frequency < FREQUENCY_MIN) {
+            return;
+        }
+
         config.setCpuFrequency(frequency);
         updateFrequencyMenus();
     }
@@ -233,12 +263,7 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
     private void onDecreaseFrequency() {
         int frequency = config.getCpuFrequency() - FREQUENCY_STEP;
 
-        if (frequency < FREQUENCY_MIN) {
-            return;
-        }
-
-        config.setCpuFrequency(frequency);
-        updateFrequencyMenus();
+        onUpdateFrequency(frequency);
     }
 
     private void updateFrequencyMenus() {

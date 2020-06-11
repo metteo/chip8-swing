@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static javax.swing.JOptionPane.showInputDialog;
 import static javax.swing.SwingUtilities.windowForComponent;
 import static net.novaware.chip8.core.util.AssertUtil.assertArgument;
 
@@ -256,6 +257,11 @@ public class MenuBarViewImpl implements MenuBarView {
     }
 
     @Override
+    public Consumer<ActionListener> getCurrentFrequency() {
+        return currentFrequency::addActionListener;
+    }
+
+    @Override
     public Consumer<ActionListener> getDecreaseFrequency() {
         return decreaseFrequency::addActionListener;
     }
@@ -263,6 +269,19 @@ public class MenuBarViewImpl implements MenuBarView {
     @Override
     public void setDecreaseFrequencyEnabled(boolean enabled) {
         decreaseFrequency.setEnabled(enabled);
+    }
+
+    @Override
+    public void showFrequencyDialog(String currentFrequency, Consumer<String> newFrequencyConsumer) {
+        String frequency = (String) showInputDialog(
+                component.getTopLevelAncestor(),
+                "Enter frequency: ",
+                "CPU Frequency",
+                JOptionPane.QUESTION_MESSAGE,
+                null, null,
+                currentFrequency
+        );
+        newFrequencyConsumer.accept(frequency);
     }
 
     @Override
@@ -588,7 +607,6 @@ public class MenuBarViewImpl implements MenuBarView {
         frequency.add(increaseFrequency);
 
         currentFrequency = new JMenuItem("  500Hz");
-        currentFrequency.setEnabled(false);
         frequency.add(currentFrequency);
 
         decreaseFrequency = new JMenuItem(" -100Hz", KeyEvent.VK_F1);
