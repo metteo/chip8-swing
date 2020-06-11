@@ -137,7 +137,7 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
     private void onAbout() {
         //TODO: should call view, which delegates to this static method
         showMessageDialog(getView().getComponent().getTopLevelAncestor(),
-                "Version: 0.0.1-SNAPSHOT\nAuthor: Grzegorz Nowak",
+                "Version: 0.1.0-SNAPSHOT\nAuthor: Grzegorz Nowak",
                 "Chip8 Emulgator", JOptionPane.INFORMATION_MESSAGE);
     }
 
