@@ -5,5 +5,7 @@ module net.novaware.chip8.swing {
 
     requires org.apache.logging.log4j;
 
+    requires com.formdev.flatlaf;
+
     exports net.novaware.chip8.swing;
 }

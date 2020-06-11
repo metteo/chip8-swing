@@ -2,6 +2,8 @@ package net.novaware.chip8.swing.status;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class StatusBarViewImpl implements StatusBarView {
@@ -37,6 +39,20 @@ public class StatusBarViewImpl implements StatusBarView {
 
         component = new JPanel(layout);
         component.setPreferredSize(new Dimension(1, DEFAULT_HEIGHT));
+
+        component.addPropertyChangeListener("UI", pce -> {
+            boolean flat = pce.getNewValue().getClass().getSimpleName().contains("Flat"); //TODO: make it nicer
+
+            Border border = flat ? new EmptyBorder(0, 0, 0, 0) : new BevelBorder(BevelBorder.LOWERED);
+
+            infoPanel.setBorder(border);
+            fpsPanel.setBorder(border);
+            frequencyPanel.setBorder(border);
+            delayPanel.setBorder(border);
+            soundPanel.setBorder(border);
+            powerPanel.setBorder(border);
+            soundOnPanel.setBorder(border);
+        });
     }
 
     public void initialize() {
@@ -111,7 +127,7 @@ public class StatusBarViewImpl implements StatusBarView {
     private void initPower() {
         powerPanel = new JPanel(new BorderLayout());
         powerPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
-        powerPanel.setPreferredSize(new Dimension(50, DEFAULT_HEIGHT));
+        powerPanel.setPreferredSize(new Dimension(55, DEFAULT_HEIGHT));
         component.add(powerPanel);
 
         power = new JLabel("RUN ️");
@@ -160,7 +176,7 @@ public class StatusBarViewImpl implements StatusBarView {
     private void initFps() {
         fpsPanel = new JPanel(new BorderLayout());
         fpsPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
-        fpsPanel.setPreferredSize(new Dimension(60, DEFAULT_HEIGHT));
+        fpsPanel.setPreferredSize(new Dimension(65, DEFAULT_HEIGHT));
         component.add(fpsPanel);
 
         fps = new JLabel("? FPS");

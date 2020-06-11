@@ -1,5 +1,6 @@
 package net.novaware.chip8.swing;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
 import net.novaware.chip8.core.Board;
 import net.novaware.chip8.core.clock.ClockGenerator;
 import net.novaware.chip8.core.clock.ClockGeneratorJvmImpl;
@@ -43,6 +44,8 @@ public class Chip8 {
                 .newBoard();
 
         SwingUtilities.invokeLater(() -> {
+            install(new FlatDarculaLaf());
+
             WindowView primaryWindowView = new WindowViewImpl();
 
             primaryWindow = new WindowPresenterImpl(
@@ -69,6 +72,10 @@ public class Chip8 {
             LOG.warn("Unable to load custom app icon, falling back to default. ", e);
             return Optional.empty();
         }
+    }
+
+    private static void install(LookAndFeel laf) {
+        UIManager.installLookAndFeel(laf.getName(), laf.getClass().getName());
     }
 
     public static void main(String[] args) {
