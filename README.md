@@ -1,5 +1,6 @@
 # Chip8 Emulgator
 
+![chip8-swing](https://github.com/metteo/chip8-swing/workflows/chip8-swing/badge.svg) [![YouTube Video Likes](https://img.shields.io/youtube/likes/Go8731_5hpM?style=social)](https://www.youtube.com/watch?v=Go8731_5hpM)
 
 ![Screenshot of the application](https://repository-images.githubusercontent.com/239994384/6ad99700-9601-11ea-81f2-ce7200aed5e0)
 
