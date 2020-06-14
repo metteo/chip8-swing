@@ -64,10 +64,14 @@ public class ProfileStub {
         }
 
         if (title.equals("BRIX")) {
-            config.setCpuFrequency(700);
+            config.setCpuFrequency(500);
             config.setEnforceMemoryRoRwState(false);
             config.setHorizontalClipping(true);
             config.setWrapping(false);
+        }
+
+        if (title.equals("VBRIX")) {
+            config.setCpuFrequency(700);
         }
 
         if (title.equals("BLINKY")) {

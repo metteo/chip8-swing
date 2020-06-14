@@ -1,10 +1,14 @@
 package net.novaware.chip8.swing.status;
 
+import jiconfont.icons.google_material_design_icons.GoogleMaterialDesignIcons;
+import jiconfont.swing.IconFontSwing;
+
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
 
 public class StatusBarViewImpl implements StatusBarView {
 
@@ -41,9 +45,12 @@ public class StatusBarViewImpl implements StatusBarView {
         component.setPreferredSize(new Dimension(1, DEFAULT_HEIGHT));
 
         component.addPropertyChangeListener("UI", pce -> {
-            boolean flat = pce.getNewValue().getClass().getSimpleName().contains("Flat"); //TODO: make it nicer
+            boolean flat = is(pce, "Flat");
+            boolean material = is(pce, "Material");
 
-            Border border = flat ? new EmptyBorder(0, 0, 0, 0) : new BevelBorder(BevelBorder.LOWERED);
+            Border border = flat | material
+                ? new EmptyBorder(0, 0, 0, 0)
+                : new BevelBorder(BevelBorder.LOWERED);
 
             infoPanel.setBorder(border);
             fpsPanel.setBorder(border);
@@ -53,6 +60,10 @@ public class StatusBarViewImpl implements StatusBarView {
             powerPanel.setBorder(border);
             soundOnPanel.setBorder(border);
         });
+    }
+
+    private boolean is(PropertyChangeEvent pce, String type) {
+        return pce.getNewValue().getClass().getSimpleName().contains(type);
     }
 
     public void initialize() {
@@ -98,20 +109,23 @@ public class StatusBarViewImpl implements StatusBarView {
 
     @Override
     public void setSoundOn(boolean on) {
-        if (on) {
-            soundOn.setText("Q \uD83D\uDD0A");
-        } else {
-            soundOn.setText("Q \uD83D\uDD08");
-        }
+        final Icon icon = on
+                ? getIcon(GoogleMaterialDesignIcons.VOLUME_UP)
+                : getIcon(GoogleMaterialDesignIcons.VOLUME_MUTE);
+        soundOn.setIcon(icon);
     }
 
     @Override
     public void setPowerOn(boolean on) {
-        if (on) {
-            power.setText("RUN ⏵️");
-        } else {
-            power.setText("RUN ⏸️");
-        }
+        final Icon icon = on
+                ? getIcon(GoogleMaterialDesignIcons.PLAY_ARROW)
+                : getIcon(GoogleMaterialDesignIcons.PAUSE);
+        power.setIcon(icon);
+    }
+
+    private Icon getIcon(GoogleMaterialDesignIcons playArrow) {
+        final Color color = UIManager.getColor("Label.foreground");
+        return IconFontSwing.buildIcon(playArrow, 12, color);
     }
 
     private void initSoundOn() {
@@ -120,7 +134,8 @@ public class StatusBarViewImpl implements StatusBarView {
         soundOnPanel.setPreferredSize(new Dimension(35, DEFAULT_HEIGHT));
         component.add(soundOnPanel);
 
-        soundOn = new JLabel("Q ");
+        soundOn = new JLabel("Q");
+        soundOn.setHorizontalTextPosition(JLabel.LEFT);
         soundOnPanel.add(soundOn, BorderLayout.CENTER);
     }
 
@@ -130,7 +145,8 @@ public class StatusBarViewImpl implements StatusBarView {
         powerPanel.setPreferredSize(new Dimension(55, DEFAULT_HEIGHT));
         component.add(powerPanel);
 
-        power = new JLabel("RUN ️");
+        power = new JLabel("RUN");
+        power.setHorizontalTextPosition(JLabel.LEFT);
         powerPanel.add(power, BorderLayout.CENTER);
     }
 
@@ -140,7 +156,7 @@ public class StatusBarViewImpl implements StatusBarView {
         soundPanel.setPreferredSize(new Dimension(80, DEFAULT_HEIGHT));
         component.add(soundPanel);
 
-        JLabel st = new JLabel("ST ");
+        JLabel st = new JLabel(" ST ");
         soundPanel.add(st, BorderLayout.WEST);
 
         sound = new JProgressBar();
@@ -154,7 +170,7 @@ public class StatusBarViewImpl implements StatusBarView {
         delayPanel.setPreferredSize(new Dimension(80, DEFAULT_HEIGHT));
         component.add(delayPanel);
 
-        JLabel dt = new JLabel("DT ");
+        JLabel dt = new JLabel(" DT ");
         delayPanel.add(dt, BorderLayout.WEST);
 
         delay = new JProgressBar();

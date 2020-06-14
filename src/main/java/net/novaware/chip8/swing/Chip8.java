@@ -1,6 +1,8 @@
 package net.novaware.chip8.swing;
 
 import com.formdev.flatlaf.FlatDarculaLaf;
+import mdlaf.MaterialLookAndFeel;
+import mdlaf.themes.MaterialLiteTheme;
 import net.novaware.chip8.core.Board;
 import net.novaware.chip8.core.clock.ClockGenerator;
 import net.novaware.chip8.core.clock.ClockGeneratorJvmImpl;
@@ -45,6 +47,7 @@ public class Chip8 {
 
         SwingUtilities.invokeLater(() -> {
             install(new FlatDarculaLaf());
+            new MaterialLookAndFeel(new MaterialLiteTheme()); // constructor installs the laf & theme
 
             WindowView primaryWindowView = new WindowViewImpl();
 
