@@ -1,5 +1,7 @@
 package net.novaware.chip8.swing.menu;
 
+import net.novaware.chip8.swing.prefs.PreferencesViewImpl;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -47,6 +49,8 @@ public class MenuBarViewImpl implements MenuBarView {
     private JMenuItem decreaseFrequency;
 
     private JCheckBoxMenuItem memoryProtection;
+
+    private JMenuItem preferences;
 
     private JMenu viewMenu;
     private JMenu theme;
@@ -617,6 +621,12 @@ public class MenuBarViewImpl implements MenuBarView {
         memoryProtection.setMnemonic(KeyEvent.VK_M);
         memoryProtection.setState(false);
         editMenu.add(memoryProtection);
+
+        editMenu.addSeparator();
+
+        preferences = new JMenuItem("Preferences");
+        preferences.addActionListener(ae -> new PreferencesViewImpl().setVisible(true));
+        editMenu.add(preferences);
     }
 
     private void initViewMenu() {
