@@ -25,7 +25,9 @@ public class PreferencesViewImpl implements PreferencesView {
         listPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
         frame.add(listPanel, BorderLayout.WEST);
 
-        JList<String> list = new JList<>(new String[]{"Keyboard"});
+        JList<String> list = new JList<>(new String[]{"General", "Emulator", "Keyboard", "Audio", "Video",
+            "Multiplayer"});
+        list.setSelectedIndex(2);
 
         listPanel.add(list);
 
@@ -83,8 +85,15 @@ public class PreferencesViewImpl implements PreferencesView {
         JButton ok = new JButton("OK");
         bottomPanel.add(ok);
 
+        bottomPanel.add(Box.createHorizontalStrut(8));
+
         JButton cancel = new JButton("Cancel");
         bottomPanel.add(cancel);
+
+        bottomPanel.add(Box.createHorizontalStrut(8));
+
+        JButton apply = new JButton("Apply");
+        bottomPanel.add(apply);
 
         bottomPanel.add(Box.createHorizontalStrut(8));
 
