@@ -62,6 +62,10 @@ public interface MenuBarView extends View {
     void setCosmacSelected(boolean selected);
     boolean isCosmacSelected();
 
+    Consumer<ActionListener> getGlow();
+    void setGlowSelected(boolean selected);
+    boolean isGlowSelected();
+
     Consumer<ActionListener> getBorder();
     void setBorderSelected(boolean selected);
     boolean isBorderSelected();

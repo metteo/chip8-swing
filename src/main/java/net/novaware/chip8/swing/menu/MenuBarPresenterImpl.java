@@ -102,6 +102,7 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
         view.getDecreaseFrequency().accept(ae -> onDecreaseFrequency());
         view.getMemoryProtection().accept(ae -> onMemoryProtection());
         view.getCosmac().accept(ae -> onStyle(JDisplay.Style.SOLID));
+        view.getGlow().accept(ae -> onStyle(JDisplay.Style.GLOW));
         view.getBorder().accept(ae -> onStyle(JDisplay.Style.BORDERED));
         view.getBrick().accept(ae -> onStyle(JDisplay.Style.BRICKED));
         view.getIncreaseScale().accept(ae -> onIncreaseScale());
@@ -206,6 +207,9 @@ public class MenuBarPresenterImpl extends AbstractPresenter<MenuBarView> impleme
         switch (style) {
             case SOLID:
                 view.setCosmacSelected(true);
+                break;
+            case GLOW:
+                view.setGlowSelected(true);
                 break;
             case BORDERED:
                 view.setBorderSelected(true);

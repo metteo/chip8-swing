@@ -5,6 +5,8 @@ module net.novaware.chip8.swing {
 
     requires org.apache.logging.log4j;
 
+    requires filters; //com.jhlabs.filters
+
     //TODO: should be transitive of jiconfont.swing
     requires jiconfont;
     requires jiconfont.swing;

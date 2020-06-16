@@ -3,6 +3,7 @@ package net.novaware.chip8.swing.display;
 import net.novaware.chip8.swing.mvp.View;
 import net.novaware.chip8.swing.ui.DisplayModel;
 import net.novaware.chip8.swing.ui.JDisplay;
+import net.novaware.chip8.swing.ui.JDisplay2;
 
 import java.util.function.IntConsumer;
 

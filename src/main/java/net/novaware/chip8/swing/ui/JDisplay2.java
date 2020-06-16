@@ -1,19 +1,15 @@
 package net.novaware.chip8.swing.ui;
 
+import com.jhlabs.image.BoxBlurFilter;
 import net.novaware.chip8.core.util.FrequencyCounter;
+import net.novaware.chip8.swing.ui.JDisplay.Style;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class JDisplay extends JComponent {
+public class JDisplay2 extends JComponent {
 
-    public enum Style {
-        SOLID,
-        GLOW,
-        BORDERED,
-        BRICKED
-    }
     private DisplayModel model;
 
     private int scale = 1;
@@ -24,12 +20,17 @@ public class JDisplay extends JComponent {
     private Color foreground = Color.WHITE;
     private Color ghost = Color.BLACK;
 
+    private BufferedImage backgroundBuffer;
+    private BufferedImage foregroundBuffer;
+
     private BufferedImage pixelOn;
     private BufferedImage pixelOff;
 
+    private BoxBlurFilter boxBlur = new BoxBlurFilter();
+
     private FrequencyCounter fpsCounter = new FrequencyCounter(20, 0.1);
 
-    public JDisplay(DisplayModel model) {
+    public JDisplay2(DisplayModel model) {
         this.model = model;
 
         setBackground(Color.GRAY);
@@ -40,6 +41,10 @@ public class JDisplay extends JComponent {
         model.addDataUpdateListener(pce -> {
             SwingUtilities.invokeLater(this::repaint);
         });
+
+        boxBlur.setRadius(2f);
+        boxBlur.setIterations(2);
+        boxBlur.setPremultiplyAlpha(true);
 
         fpsCounter.initialize();
         fpsCounter.subscribe(fc -> {
@@ -98,35 +103,72 @@ public class JDisplay extends JComponent {
     }
 
     private void updateImageBuffers() {
-        pixelOn = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_RGB);
-        pixelOff = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_RGB);
+        final int width = scale * model.getColumnCount();
+        final int height = scale * model.getRowCount();
+
+        //FIXME: these buffers made solid mode a lot slower in full screen ~120fps -> ~30fps
+        backgroundBuffer = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        foregroundBuffer = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        pixelOn = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_ARGB);
+        pixelOff = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_ARGB);
     }
 
     @Override
     public void paint(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+
         fpsCounter.takeASample();
 
         maybeUpdateScale();
         updatePixelOn();
         updatePixelOff();
+        fillBuffers();
 
         int paddingTop = getPaddingTop();
         int paddingLeft = getPaddingLeft();
 
-        g.setColor(getBackground());
-        g.fillRect(0, 0, getWidth(), getHeight());
+        g2d.setColor(getBackground());
+        g2d.fillRect(0, 0, getWidth(), getHeight());
 
-        for (int row = 0; row < model.getRowCount(); ++row) {
-            for (int col = 0; col < model.getColumnCount(); ++col) {
-                Image pixel = model.isPixelOn(col, row) ? pixelOn : pixelOff;
+        g2d.drawImage(backgroundBuffer, paddingLeft, paddingTop, null);
 
-                g.drawImage(pixel, paddingLeft + scale * col, paddingTop + scale * row, null);
-            }
+        if (style == Style.GLOW) {
+            g2d.drawImage(foregroundBuffer, boxBlur, paddingLeft, paddingTop);
         }
+
+        g2d.drawImage(foregroundBuffer, paddingLeft, paddingTop, null);
 
         fpsCounter.maybePublish();
 
         super.paint(g); // last to let children paint :)
+    }
+
+    private void fillBuffers() {
+        final Graphics2D bbg = (Graphics2D) backgroundBuffer.getGraphics();
+        clearGraphics2D(bbg, backgroundBuffer);
+
+        final Graphics2D fbg = (Graphics2D) foregroundBuffer.getGraphics();
+        clearGraphics2D(fbg, foregroundBuffer);
+
+        for (int row = 0; row < model.getRowCount(); ++row) {
+            for (int col = 0; col < model.getColumnCount(); ++col) {
+                boolean isPixelOn = model.isPixelOn(col, row);
+                Image pixel = isPixelOn ? pixelOn : pixelOff;
+                Graphics bufferGraphics = isPixelOn ? fbg : bbg;
+
+                bufferGraphics.drawImage(pixel, scale * col, scale * row, null);
+            }
+        }
+
+        bbg.dispose();
+        fbg.dispose();
+    }
+
+    private void clearGraphics2D(Graphics2D fbg, BufferedImage foregroundBuffer) {
+        fbg.setComposite(AlphaComposite.Clear);
+        fbg.fillRect(0, 0, foregroundBuffer.getWidth(), foregroundBuffer.getHeight());
+        fbg.setPaintMode();
     }
 
     private void updatePixelOff() {
