@@ -368,6 +368,7 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
                 int keyIdx = mapKey(e);
                 if (keyIdx >= 0x0 && keyIdx <= 0xF) {
                     keyReceiver.accept(new InPacket(KeyPort.Direction.DOWN, ubyte(keyIdx)));
+                    e.consume();
                 }
             }
 
@@ -376,6 +377,7 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
                 int keyIdx = mapKey(e);
                 if (keyIdx >= 0x0 && keyIdx <= 0xF) {
                     keyReceiver.accept(new InPacket(KeyPort.Direction.UP, ubyte(keyIdx)));
+                    e.consume();
                 }
             }
         });
