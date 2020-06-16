@@ -9,9 +9,12 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 /**
- * First attempt at glowing effect. Using additional buffers in such manner slowed down regular rendering a lot.
+ * Second attempt at glowing effect. backBuffer is used always, but for glow effect only for ON pixels.
+ * Works nice on scale up to 7, full screen unplayable.
+ *
+ * Optimizes rendering of pixel images - happens only if needed instead of every frame.
  */
-public class JDisplay2 extends JComponent {
+public class JDisplay3 extends JComponent {
 
     private DisplayModel model;
 
@@ -23,8 +26,8 @@ public class JDisplay2 extends JComponent {
     private Color foreground = Color.WHITE;
     private Color ghost = Color.BLACK;
 
-    private BufferedImage backgroundBuffer;
-    private BufferedImage foregroundBuffer;
+    private BufferedImage backBuffer;
+    private Graphics2D backGraphics;
 
     private BufferedImage pixelOn;
     private BufferedImage pixelOff;
@@ -33,20 +36,22 @@ public class JDisplay2 extends JComponent {
 
     private FrequencyCounter fpsCounter = new FrequencyCounter(20, 0.1);
 
-    public JDisplay2(DisplayModel model) {
+    public JDisplay3(DisplayModel model) {
         this.model = model;
 
         setBackground(Color.GRAY);
         setForeground(Color.WHITE);
 
         updateImageBuffers();
+        updatePixelOn();
+        updatePixelOff();
 
         model.addDataUpdateListener(pce -> {
             SwingUtilities.invokeLater(this::repaint);
         });
 
-        boxBlur.setRadius(2f);
-        boxBlur.setIterations(2);
+        boxBlur.setRadius(3f);
+        boxBlur.setIterations(3);
         boxBlur.setPremultiplyAlpha(true);
 
         fpsCounter.initialize();
@@ -57,6 +62,9 @@ public class JDisplay2 extends JComponent {
 
     public void setStyle(Style style) {
         this.style = style;
+
+        updatePixelOn();
+        updatePixelOff();
     }
 
     public Style getStyle() {
@@ -76,6 +84,8 @@ public class JDisplay2 extends JComponent {
         setPreferredSize(new Dimension(newWidth, newHeight));
 
         updateImageBuffers();
+        updatePixelOn();
+        updatePixelOff();
     }
 
     private int calculateScale() {
@@ -102,19 +112,31 @@ public class JDisplay2 extends JComponent {
             firePropertyChange("scale", oldScale, scale);
 
             updateImageBuffers();
+            updatePixelOn();
+            updatePixelOff();
         }
     }
 
     private void updateImageBuffers() {
-        final int width = scale * model.getColumnCount();
-        final int height = scale * model.getRowCount();
+        if (backGraphics != null) {
+            backGraphics.dispose();
+            backGraphics = null;
+        }
 
-        //FIXME: these buffers made solid mode a lot slower in full screen ~120fps -> ~30fps
-        backgroundBuffer = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        foregroundBuffer = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        final GraphicsConfiguration graphicsConfiguration = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice()
+                .getDefaultConfiguration();
 
-        pixelOn = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_ARGB);
-        pixelOff = new BufferedImage(scale, scale, BufferedImage.TYPE_INT_ARGB);
+        backBuffer = graphicsConfiguration.createCompatibleImage(
+                scale * model.getColumnCount(),
+                scale * model.getRowCount(),
+                Transparency.TRANSLUCENT
+        );
+
+        backGraphics = (Graphics2D) backBuffer.getGraphics();
+
+        pixelOn = graphicsConfiguration.createCompatibleImage(scale, scale);
+        pixelOff = graphicsConfiguration.createCompatibleImage(scale, scale);
     }
 
     @Override
@@ -124,9 +146,6 @@ public class JDisplay2 extends JComponent {
         fpsCounter.takeASample();
 
         maybeUpdateScale();
-        updatePixelOn();
-        updatePixelOff();
-        fillBuffers();
 
         int paddingTop = getPaddingTop();
         int paddingLeft = getPaddingLeft();
@@ -134,38 +153,35 @@ public class JDisplay2 extends JComponent {
         g2d.setColor(getBackground());
         g2d.fillRect(0, 0, getWidth(), getHeight());
 
-        g2d.drawImage(backgroundBuffer, paddingLeft, paddingTop, null);
-
-        if (style == Style.GLOW) {
-            g2d.drawImage(foregroundBuffer, boxBlur, paddingLeft, paddingTop);
-        }
-
-        g2d.drawImage(foregroundBuffer, paddingLeft, paddingTop, null);
-
-        fpsCounter.maybePublish();
-
-        super.paint(g); // last to let children paint :)
-    }
-
-    private void fillBuffers() {
-        final Graphics2D bbg = (Graphics2D) backgroundBuffer.getGraphics();
-        clearGraphics2D(bbg, backgroundBuffer);
-
-        final Graphics2D fbg = (Graphics2D) foregroundBuffer.getGraphics();
-        clearGraphics2D(fbg, foregroundBuffer);
+        clearGraphics2D(backGraphics, backBuffer);
 
         for (int row = 0; row < model.getRowCount(); ++row) {
             for (int col = 0; col < model.getColumnCount(); ++col) {
-                boolean isPixelOn = model.isPixelOn(col, row);
-                Image pixel = isPixelOn ? pixelOn : pixelOff;
-                Graphics bufferGraphics = isPixelOn ? fbg : bbg;
+                final boolean pixelOn = model.isPixelOn(col, row);
+                BufferedImage pixel = pixelOn ? this.pixelOn : pixelOff;
 
-                bufferGraphics.drawImage(pixel, scale * col, scale * row, null);
+                if(style == Style.GLOW) {
+                    if (pixelOn) {
+                        backGraphics.drawImage(pixel, scale * col, scale * row, null);
+                    } else {
+                        g2d.drawImage(pixel, paddingLeft + scale * col, paddingTop + scale * row, null);
+                    }
+                } else {
+                    backGraphics.drawImage(pixel, scale * col, scale * row, null);
+                }
             }
         }
 
-        bbg.dispose();
-        fbg.dispose();
+        if (style == Style.GLOW) {
+            g2d.drawImage(backBuffer, boxBlur, paddingLeft, paddingTop);
+            //g2d.drawImage(backBuffer, paddingLeft, paddingTop, null);
+        } else {
+            g2d.drawImage(backBuffer, paddingLeft, paddingTop, null);
+        }
+
+        fpsCounter.maybePublish();
+
+        super.paint(g2d); // last to let children paint :)
     }
 
     private void clearGraphics2D(Graphics2D fbg, BufferedImage foregroundBuffer) {

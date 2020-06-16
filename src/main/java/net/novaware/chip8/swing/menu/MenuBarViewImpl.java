@@ -772,8 +772,6 @@ public class MenuBarViewImpl implements MenuBarView {
             String laf = lafInfo[i].getClassName();
             String name = lafInfo[i].getName();
 
-            System.out.println(name + ": " + laf);
-
             Action action = new ChangeLookAndFeelAction(laf, name);
             JRadioButtonMenuItem mi = new JRadioButtonMenuItem(action);
             menu.add(mi);

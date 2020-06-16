@@ -49,11 +49,10 @@ public class DisplayViewImpl implements DisplayView {
 
     @Override
     public void setStyle(JDisplay.Style style) {
-        component.setStyle(style);
-
         switch(style) {
             case SOLID:
             case BORDERED:
+            case GLOW:
                 component.setBackground(Color.GRAY);
                 component.setForeground(Color.WHITE);
                 component.setGhost(Color.BLACK);
@@ -64,6 +63,8 @@ public class DisplayViewImpl implements DisplayView {
                 component.setGhost(new Color(0xA9B4A7));
                 break;
         }
+
+        component.setStyle(style);
 
         component.repaint();
     }
