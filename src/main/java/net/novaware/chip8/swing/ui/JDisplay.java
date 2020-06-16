@@ -103,7 +103,9 @@ public class JDisplay extends JComponent {
     }
 
     @Override
-    public void paint(Graphics g) {
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
         fpsCounter.takeASample();
 
         maybeUpdateScale();
@@ -125,8 +127,6 @@ public class JDisplay extends JComponent {
         }
 
         fpsCounter.maybePublish();
-
-        super.paint(g); // last to let children paint :)
     }
 
     private void updatePixelOff() {

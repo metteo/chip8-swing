@@ -118,7 +118,9 @@ public class JDisplay2 extends JComponent {
     }
 
     @Override
-    public void paint(Graphics g) {
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
         Graphics2D g2d = (Graphics2D) g;
 
         fpsCounter.takeASample();
@@ -143,8 +145,6 @@ public class JDisplay2 extends JComponent {
         g2d.drawImage(foregroundBuffer, paddingLeft, paddingTop, null);
 
         fpsCounter.maybePublish();
-
-        super.paint(g); // last to let children paint :)
     }
 
     private void fillBuffers() {
