@@ -5,7 +5,7 @@ import mdlaf.MaterialLookAndFeel;
 import mdlaf.themes.MaterialLiteTheme;
 import net.novaware.chip8.core.Board;
 import net.novaware.chip8.core.clock.ClockGenerator;
-import net.novaware.chip8.core.clock.ClockGeneratorJvmImpl;
+import net.novaware.chip8.core.clock.ScheduledClockGenerator;
 import net.novaware.chip8.core.config.MutableConfig;
 import net.novaware.chip8.core.port.DisplayPort;
 import net.novaware.chip8.swing.window.WindowPresenter;
@@ -40,7 +40,7 @@ public class Chip8 {
         //TODO: update config with settings from preferences?
         MutableConfig config = new MutableConfig();
 
-        ClockGenerator clock = new ClockGeneratorJvmImpl("Swing");
+        ClockGenerator clock = new ScheduledClockGenerator("Swing");
 
         Board board = newBoardFactory(config, clock, new Random()::nextInt)
                 .newBoard();
