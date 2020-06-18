@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "net.novaware.chip8.swing.proto";
+//option java_outer_classname = "Chip8Service";
+option objc_class_prefix = "HLW";
+
+package chip8;
+
+service Chip8Service {
+  rpc getSound (SoundRequest) returns (stream SoundState) {}
+}
+
+message SoundRequest {
+  string message = 1;
+}
+
+message SoundState {
+  bool on = 1;
+}
+

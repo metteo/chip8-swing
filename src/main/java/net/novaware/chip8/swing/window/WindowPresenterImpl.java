@@ -1,5 +1,10 @@
 package net.novaware.chip8.swing.window;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
+import io.grpc.stub.StreamObserver;
 import net.novaware.chip8.core.Board;
 import net.novaware.chip8.core.clock.ClockGenerator;
 import net.novaware.chip8.core.config.MutableConfig;
@@ -13,6 +18,10 @@ import net.novaware.chip8.swing.menu.MenuBarPresenter;
 import net.novaware.chip8.swing.menu.MenuBarPresenterImpl;
 import net.novaware.chip8.swing.mvp.AbstractPresenter;
 import net.novaware.chip8.swing.profile.ProfileStub;
+import net.novaware.chip8.swing.proto.Chip8ServiceGrpc;
+import net.novaware.chip8.swing.proto.Chip8ServiceImpl;
+import net.novaware.chip8.swing.proto.SoundRequest;
+import net.novaware.chip8.swing.proto.SoundState;
 import net.novaware.chip8.swing.status.StatusBarPresenter;
 import net.novaware.chip8.swing.status.StatusBarPresenterImpl;
 import org.apache.logging.log4j.LogManager;
@@ -126,11 +135,47 @@ public class WindowPresenterImpl extends AbstractPresenter<WindowView> implement
             registerMonitoring();
 
             buzzer.init();
-            board.getAudioPort().connect(buzzer);
+
+            try {
+                server = ServerBuilder.forPort(5000)
+                        .addService(new Chip8ServiceImpl(board.getAudioPort()))
+                        .build()
+                        .start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            //board.getAudioPort().connect(buzzer);
+
+            ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 5000)
+                    .usePlaintext()
+                    .build();
+
+            final Chip8ServiceGrpc.Chip8ServiceStub chip8ServiceStub = Chip8ServiceGrpc.newStub(channel);
+
+            chip8ServiceStub.getSound(SoundRequest.newBuilder().build(), new StreamObserver<SoundState>() {
+                @Override
+                public void onNext(SoundState soundState) {
+                    LOG.info("got sound: " + soundState.getOn());
+                    buzzer.accept(soundState.getOn());
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+                @Override
+                public void onCompleted() {
+                    buzzer.accept(false);
+                    buzzer.close();
+                }
+            });
         }
 
         view.getStatusBar().setInfo("Ready.");
     }
+
+    private Server server;
 
     private void registerDnD() { //TODO: make part of display?
         view.getDisplay().getComponent().setTransferHandler(new TransferHandler() {

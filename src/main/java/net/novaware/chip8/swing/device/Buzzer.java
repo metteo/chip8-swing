@@ -22,7 +22,12 @@ public class Buzzer implements Consumer<AudioPort.Packet> {
 
     @Override
     public void accept(AudioPort.Packet buzz) {
-        if (buzz.isSoundOn()) {
+        final boolean soundOn = buzz.isSoundOn();
+        accept(soundOn);
+    }
+
+    public void accept(boolean soundOn) {
+        if (soundOn) {
             waveGenerator.play();
         } else {
             waveGenerator.stop();
